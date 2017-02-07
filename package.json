@@ -1,0 +1,20 @@
+{
+  "name": "apples_against_humanity",
+  "version": "1.0.0",
+  "description": "Apples-to-Apples and Cards Against Humanity multi-player game.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wadewooldridge/apples_against_humanity.git"
+  },
+  "author": "Wade Wooldridge",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wadewooldridge/apples_against_humanity/issues"
+  },
+  "homepage": "https://github.com/wadewooldridge/apples_against_humanity#readme"
+}

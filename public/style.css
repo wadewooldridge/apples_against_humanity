@@ -1,0 +1,63 @@
+/**
+ *  apples_against_humanity - Apples-to-Apples and Cards Against Humanity multi-player game.
+ *  Copyright (C) 2017 by Wade Wooldridge
+ *
+ *  style.css - Client CSS file.
+ */
+
+/* Default styling from Express. */
+body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+    color: #00B7FF;
+}
+
+/* Styling for overall program. */
+* {
+    box-sizing: border-box;
+}
+
+.shaded {
+    opacity: 0.3;
+}
+
+/* Styling for the new game page. */
+#new-game h2 {
+    text-align: center;
+}
+
+.game-box-div {
+    display: inline-block;
+    width: 40%;
+    margin: 0 4%;
+}
+
+.game-box-div button {
+    padding: 0;
+    border: 4px solid black;
+    border-radius: 4px;
+}
+
+.game-box-div button:hover {
+    border: 4px solid limegreen;
+}
+
+.game-box-div img {
+    width: 100%;
+    height: 100%;
+}
+
+#new-game-div {
+    text-align: center;
+}
+
+#new-game-button {
+    margin: 0 auto;
+    font-size: 150%;
+}
+
+/* Styling for the play game page. */
+

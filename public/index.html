@@ -1,11 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="aahClientApp">
 <head>
     <meta charset="UTF-8">
     <title>Apples Against Humanity</title>
+    <link href="https://fonts.googleapis.com/css?family=Cabin+Condensed|Francois+One|News+Cycle|Open+Sans+Condensed:300|PT+Sans+Narrow" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-route.js"></script>
+
+    <script src="client.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Apples Against Humanity</h1>
-<p>This client will connect to the server.</p>
+<main ng-controller="routeController">
+    <div ng-view>
+    </div>
+</main>
 </body>
 </html>

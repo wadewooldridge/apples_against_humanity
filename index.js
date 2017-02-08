@@ -5,4 +5,4 @@
  *  index.js - Top-level server start program.
  */
 
-require('./app/server/server.js');
+require('./app/server.js');

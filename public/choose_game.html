@@ -1,0 +1,26 @@
+<div id="choose-game-div">
+    <h2>I want to play:</h2>
+    <div>
+        <div id="a2a-box-div" class="game-box-div">
+            <button class="game-box-button" ng-click=cngc.gameTypeApples = true">
+                <img ng-class="{shaded: !cgc.gameTypeApples}" src="images/a2a_box.jpg">
+            </button>
+        </div>
+        <div id="cah-box-div" class="game-box-div">
+            <button class="game-box-button" ng-click="cgc.gameTypeApples = false">
+                <img ng-class="{shaded: cgc.gameTypeApples}" src="images/cah_box.jpg">
+            </button>
+        </div>
+    </div>
+    <br>
+    <hr>
+    <br>
+    <div id="start-new-game-div">
+        <button id="start-new-game-button" ng-click="cgc.startGame()">Start New Game</button>
+    </div>
+    <h2>&mdash; or &mdash;</h2>
+    <h2>Join one of the following games:</h2>
+    <div>
+        Game list goes here.
+    </div>
+</div>

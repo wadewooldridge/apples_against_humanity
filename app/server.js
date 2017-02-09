@@ -26,6 +26,11 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 /**
+ *  Program-specific modules.
+ */
+var gameList = require('./GameList');
+
+/**
  *  Create the main Express app.
  */
 var app = express();
@@ -44,6 +49,32 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(cookieParser());
 
 // Add REST interface dispatching here.
+app.get('/games/a2a', function(request, response) {
+    response.setHeader('Content-Type', 'application/json');
+    response.send(JSON.stringify(gameList.getByGameType(true)));
+});
+
+app.get('/games/cah', function(request, response) {
+    response.setHeader('Content-Type', 'application/json');
+    response.send(JSON.stringify(gameList.getByGameType(false)));
+});
+
+app.get('/games', function(request, response) {
+    response.setHeader('Content-Type', 'application/json');
+    response.send(JSON.stringify(gameList.getAll()));
+});
+
+app.get('/new/a2a', function(request, response) {
+    var gameId = gameList.create(true);
+    response.setHeader('Content-Type', 'application/json');
+    response.send(JSON.stringify(gameList.getById(gameId)));
+});
+
+app.get('/new/cah', function(request, response) {
+    var gameId = gameList.create(false);
+    response.setHeader('Content-Type', 'application/json');
+    response.send(JSON.stringify(gameList.getById(gameId)));
+});
 
 // Serve default page as index.html.
 app.get('/', function(request, response) {

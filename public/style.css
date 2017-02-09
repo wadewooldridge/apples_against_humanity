@@ -5,16 +5,6 @@
  *  style.css - Client CSS file.
  */
 
-/* Default styling from Express. */
-body {
-    padding: 50px;
-    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
-
-a {
-    color: #00B7FF;
-}
-
 /* Styling for overall program. */
 * {
     box-sizing: border-box;
@@ -24,19 +14,21 @@ a {
     opacity: 0.3;
 }
 
-/* Styling for the new game page. */
-#new-game h2 {
+/* Styling for the Choose Game page. */
+#choose-game-div h2 {
     text-align: center;
 }
 
 .game-box-div {
+    text-align: center;
     display: inline-block;
-    width: 40%;
-    margin: 0 4%;
+    width: 49%;
+    margin: 0;
 }
 
 .game-box-div button {
-    padding: 0;
+    margin-left: auto;
+    margin-right: auto;
     border: 4px solid black;
     border-radius: 4px;
 }
@@ -50,14 +42,18 @@ a {
     height: 100%;
 }
 
-#new-game-div {
+#start-new-game-div {
     text-align: center;
 }
 
-#new-game-button {
+#start-new-game-button {
     margin: 0 auto;
     font-size: 150%;
 }
 
-/* Styling for the play game page. */
+/* Styling for the Join Game page. */
+
+/* Styling for the New Game page. */
+
+/* Styling for the Play game page. */
 

@@ -69,3 +69,15 @@ exports.getByGameType = function(gameTypeApples) {
 exports.getById = function(gameId) {
     return gameList[gameId];
 };
+
+/**
+ *  Join an existing game.
+ */
+exports.join = function(gameId, name, server) {
+    var success = true;
+    console.log('gameList.join: ' + gameId + ', ' + name + ', ' + server);
+    console.dir(server);
+
+    return success;
+};
+

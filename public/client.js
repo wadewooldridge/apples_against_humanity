@@ -51,7 +51,7 @@ app.config(function($routeProvider){
 });
 
 // Controller for Choose Game page.
-app.controller('chooseGameController', function($log){
+app.controller('chooseGameController', ['$interval', '$log', 'GameService', function($interval, $log, GameService){
     $log.log('chooseGameController');
     var self = this;
 
@@ -61,22 +61,32 @@ app.controller('chooseGameController', function($log){
     // Handle click on Start New Game.
     this.newGame = function() {
         $log.log('newGame');
-    }
+    };
 
-});
+    // Set interval timer to update list of available games.
+
+}]);
 
 // Controller for Join Game page.
-app.controller('joinGameController', function($log){
+app.controller('joinGameController', ['$log', function($log){
     $log.log('joinGameController');
-});
+}]);
 
 // Controller for New Game page.
-app.controller('newGameController', function($log){
+app.controller('newGameController', ['$log', function($log){
     $log.log('newGameController');
-});
+}]);
 
 // Controller for Play Game page.
-app.controller('playGameController', function($log){
+app.controller('playGameController', ['$log', function($log){
     $log.log('playGameController');
-});
+}]);
+
+// Service for interfacing to the game server.
+app.service('GameService', ['$http', '$log', '$q', function($http, $log, $q) {
+    $log.log('GameService: factory');
+
+
+
+}]);
 

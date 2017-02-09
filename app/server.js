@@ -14,9 +14,10 @@ var cache = {};
  *  Node / Express modules.
  */
 var express = require('express');
-var routes = require('../routes');
-var fs = require('fs');
 var http = require('http');
+var routes = require('../routes');
+
+var fs = require('fs');
 var mime = require('mime');
 var path = require('path');
 
@@ -34,6 +35,10 @@ var gameList = require('./GameList');
  *  Create the main Express app.
  */
 var app = express();
+var server = http.Server(app);
+var io = require('socket.io')(server);
+// Listen for socket IO requests on port 80.
+server.listen(80);
 
 // Set up view engine: only using Jade for the default error handler; the rest are static pages.
 app.set('views', path.join(__dirname, '../views'));
@@ -74,6 +79,40 @@ app.get('/new/cah', function(request, response) {
     var gameId = gameList.create(false);
     response.setHeader('Content-Type', 'application/json');
     response.send(JSON.stringify(gameList.getById(gameId)));
+});
+
+app.get('/join', function(request, response, next) {
+    var gameId = request.param('id');
+    var name = request.param('name');
+    var err = undefined;
+
+    if (!gameId || !name) {
+        err = new Error('Invalid parameter');
+        err.status = 400;
+        next(err);
+    } else {
+        var game = gameList.getById(gameId);
+        if (!game) {
+            err = new Error('Not found');
+            err.status = 404;
+            next(err);
+        } else {
+            var success = gameList.join(gameId, name, server);
+            if (success) {
+                response.setHeader('Content-Type', 'application/json');
+                response.send(JSON.stringify(gameList.getById(gameId)));
+            } else {
+                err = new Error('Join failed.');
+                err.status = 500;
+                next(err);
+            }
+        }
+    }
+});
+
+io.on('connection', function(socket) {
+    console.log('io.connection: ' + socket);
+
 });
 
 // Serve default page as index.html.

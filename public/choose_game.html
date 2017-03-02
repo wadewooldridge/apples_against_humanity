@@ -1,26 +1,39 @@
 <div id="choose-game-div">
-    <h2>I want to play:</h2>
     <div>
         <div id="a2a-box-div" class="game-box-div">
-            <button class="game-box-button" ng-click=cngc.gameTypeApples = true">
-                <img ng-class="{shaded: !cgc.gameTypeApples}" src="images/a2a_box.jpg">
-            </button>
+            <img src="images/a2a_box.jpg">
+            <button class="start-new-game-button" ng-click="cgc.newGame(true)">Start New Game</button>
         </div>
         <div id="cah-box-div" class="game-box-div">
-            <button class="game-box-button" ng-click="cgc.gameTypeApples = false">
-                <img ng-class="{shaded: cgc.gameTypeApples}" src="images/cah_box.jpg">
-            </button>
+            <img src="images/cah_box.jpg">
+            <button class="start-new-game-button" ng-click="cgc.newGame(false)">Start New Game</button>
         </div>
     </div>
-    <br>
     <hr>
-    <br>
-    <div id="start-new-game-div">
-        <button id="start-new-game-button" ng-click="cgc.startGame()">Start New Game</button>
-    </div>
     <h2>&mdash; or &mdash;</h2>
     <h2>Join one of the following games:</h2>
-    <div>
-        Game list goes here.
+    <div ng-show="cgc.gameListEmpty">
+        <p>No games found.</p>
+    </div>
+    <div ng-show="!cgc.gameListEmpty">
+        <table>
+            <tr>
+                <th>Game ID</th>
+                <th>Game Type</th>
+                <th>Host Name</th>
+                <th>Player Count</th>
+                <th></th>
+            </tr>
+            <tr ng-repeat="game in cgc.gameList">
+                <td>{{game.gameId}}</td>
+                <td>
+                    <img ng-show="game.gameTypeApples" src="images/a2a_box.jpg">
+                    <img ng-show="!game.gameTypeApples" src="images/cah_box.jpg">
+                </td>
+                <td>{{game.host}}</td>
+                <td>{{game.playerCount}}</td>
+                <td><button class="join-game-button" ng-click="cgc.joinGame(game.gameId)">Join</button></td>
+            </tr>
+        </table>
     </div>
 </div>

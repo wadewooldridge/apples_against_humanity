@@ -15,26 +15,20 @@
 }
 
 /* Styling for the Choose Game page. */
+#choose-game-div {
+    max-width: 600px;
+}
+
 #choose-game-div h2 {
     text-align: center;
+    margin: 0.5em 0;
 }
 
 .game-box-div {
     text-align: center;
     display: inline-block;
-    width: 49%;
-    margin: 0;
-}
-
-.game-box-div button {
-    margin-left: auto;
-    margin-right: auto;
-    border: 4px solid black;
-    border-radius: 4px;
-}
-
-.game-box-div button:hover {
-    border: 4px solid limegreen;
+    width: 40%;
+    margin: 0.5em 4%;
 }
 
 .game-box-div img {
@@ -42,13 +36,32 @@
     height: 100%;
 }
 
-#start-new-game-div {
+.start-new-game-button {
+    margin: 0.5em auto;
+    font-size: 150%;
+    border: 2px solid black;
+}
+
+.game-box-div button:hover {
+    border: 2px solid limegreen;
+}
+
+#choose-game-div table,
+#choose-game-div th,
+#choose-game-div td {
+    border: 1px solid black;
     text-align: center;
 }
 
-#start-new-game-button {
-    margin: 0 auto;
-    font-size: 150%;
+#choose-game-div table {
+    width: 80%;
+    margin-left: 10%;
+    border-collapse: collapse;
+}
+
+#choose-game-div table img {
+    width: 50px;
+    height: 50px;
 }
 
 /* Styling for the Join Game page. */

@@ -35,11 +35,12 @@ var gameList = require('./GameList');
  *  Create the main Express app.
  */
 var app = express();
-var server = http.Server(app);
+var server = http.createServer(app);
 var io = require('socket.io')(server);
+server.listen(8080);
+
 // Listen for socket IO requests on port 80.
 server.listen(80);
-
 // Set up view engine: only using Jade for the default error handler; the rest are static pages.
 app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');
@@ -110,11 +111,6 @@ app.get('/join', function(request, response, next) {
     }
 });
 
-io.on('connection', function(socket) {
-    console.log('io.connection: ' + socket);
-
-});
-
 // Serve default page as index.html.
 app.get('/', function(request, response) {
     response.sendFile(path.join(__dirname, '../public', 'index.html'));
@@ -123,6 +119,16 @@ app.get('/', function(request, response) {
 // Most pages are just served statically.
 app.use(express.static(path.join(__dirname, '../public')));
 //app.use('/', index);
+
+// Handle dispatch for socket IO.
+io.on('connection', function(socket) {
+    console.log('io.connection: ' + socket);
+    socket.emit('test', {testData: 123});
+
+    socket.on('join', function(data) {
+        console.log('io.join: ' + data);
+    });
+});
 
 // Drop through to catch 404 and forward to error handler.
 app.use(function(req, res, next) {

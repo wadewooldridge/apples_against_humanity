@@ -115,17 +115,30 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
 }]);
 
 // Controller for Join Game page.
-app.controller('joinGameController', ['$log', function($log){
+app.controller('joinGameController', ['$interval', '$location', '$log', 'GameService', function($interval, $location, $log, GameService){
     $log.log('joinGameController');
+
 }]);
 
 // Controller for New Game page.
-app.controller('newGameController', ['$log', function($log){
+app.controller('newGameController', ['$interval', '$location', '$log', 'GameService', function($interval, $location, $log, GameService){
     $log.log('newGameController');
+
+    // This controller's copy of the current game.
+    this.currentGame = GameService.getCurrentGame();
+
+    // Variables to model the game name and user (host) name.
+    this.gameName = '';
+    this.userName = '';
+
+    // Code that gets executed on controller initialization.
+    $log.log('ngc:init');
+    GameService.connect();
+
 }]);
 
 // Controller for Play Game page.
-app.controller('playGameController', ['$log', function($log){
+app.controller('playGameController', ['$interval', '$location', '$log', 'GameService', function($interval, $location, $log, GameService){
     $log.log('playGameController');
 }]);
 
@@ -151,6 +164,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.getCurrentGameList = function() {return this.currentGameList};
     this.getCurrentGameId   = function() {return this.currentGameId};
     this.getCurrentGame     = function() {return this.currentGame};
+
+    /**
+     *  Main socket for the connection to the game server.
+     */
+    this.socket = undefined;
 
     /**
      *  Call game server to get the current list of games.
@@ -210,18 +228,13 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     };
 
     /**
-     *  Main socket for the connection to the game server.
-     */
-    this.socket = undefined;
-
-    /**
      *  Connect a socket to the game server.
      */
     this.connect = function() {
         $log.log('GameService.connect');
 
         this.socket = function(io) {
-            io.connect('http://localhost:8080');
+            io.connect('http://localhost:3001');
             $log.log('socket: ' + socket);
 
             socket.on('connection', function() {

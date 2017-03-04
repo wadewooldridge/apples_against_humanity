@@ -55,36 +55,63 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
     $log.log('chooseGameController');
     var self = this;
 
-    // Default which game is selected.
-    this.gameTypeApples = true;
-
     // Default to no games found.
     this.gameList = undefined;
     this.gameListEmpty = true;
 
+    // Interval promise for updates; need to cancel when leaving this controller.
+    this.intervalPromise = undefined;
+
+    // Start the interval timer.
+    this.startIntervalTimer = function() {
+        $log.log('cgc.startIntervalTimer');
+        this.intervalPromise = $interval(this.handleIntervalTimer, 2000);
+    };
+
+    // Stop the interval timer.
+    this.stopIntervalTimer = function() {
+        $log.log('cgc.stopIntervalTimer');
+        $interval.cancel(this.intervalPromise);
+        this.intervalPromise = undefined;
+    };
+
+    // Handle interval timer: poll for game list.
+    this.handleIntervalTimer = function() {
+        $log.log('cgc.handleIntervalTimer');
+        GameService.getGameList().then(function(gameList) {
+            $log.log('handleIntervalTimer: got new gameList');
+            self.gameList = gameList;
+            self.gameListEmpty = (Object.keys(gameList).length === 0);
+        })
+    };
+
     // Handle click on Join Game button.
     this.joinGame = function(gameId) {
-        $log.log('joinGame: ' + gameId);
+        $log.log('cgc.joinGame: ' + gameId);
+        this.stopIntervalTimer();
+
+        // Set the current game, and go to the join dialog.
+        GameService.setCurrentGame(gameId);
+        $location.url('/join');
     };
 
     // Handle click on Start New Game.
     this.newGame = function(gameTypeApples) {
-        $log.log('newGame: ' + gameTypeApples);
+        $log.log('cgc.newGame: ' + gameTypeApples);
+        this.stopIntervalTimer();
 
-        GameService.connect();
+        // Start a new game on the server.
+        GameService.startNewGame(gameTypeApples).then(function() {
+            $log.log('cgc.newGame: complete');
+            $location.url('/new');
+        });
 
-        $location.url('/join');
     };
 
-    // Set interval timer to update list of available games.
-    this.intervalPromise = $interval(function() {
-        $log.log('interval');
-        GameService.getGameList().then(function(gameList) {
-            $log.log('got new gameList');
-            self.gameList = gameList;
-            self.gameListEmpty = (Object.keys(gameList).length === 0);
-        })
-    }, 2000);
+    // Code that gets executed on controller initialization.
+    $log.log('cgc:init');
+    this.startIntervalTimer();
+
 }]);
 
 // Controller for Join Game page.
@@ -105,6 +132,25 @@ app.controller('playGameController', ['$log', function($log){
 // Service for interfacing to the game server.
 app.service('GameService', ['$http', '$location', '$log', '$q', function($http, $location, $log, $q) {
     $log.log('GameService: factory');
+    var self = this;
+
+    /**
+     *  Current list of possible games.
+     */
+    this.currentGameList = undefined;
+
+    /**
+     *  Current game being played.
+     */
+    this.currentGameId = undefined;
+    this.currentGame = undefined;
+
+    /**
+     *  Simpler getter methods.
+     */
+    this.getCurrentGameList = function() {return this.currentGameList};
+    this.getCurrentGameId   = function() {return this.currentGameId};
+    this.getCurrentGame     = function() {return this.currentGame};
 
     /**
      *  Call game server to get the current list of games.
@@ -112,7 +158,6 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.getGameList = function() {
         $log.log('GameServer.getGameList');
         var url = 'http://localhost:3000/games';
-        $log.log(url);
 
         return $http({
             method: 'GET',
@@ -124,8 +169,44 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             })
             .then(function(response) {
                 $log.log('getGameList: ' + response);
-                return response.data;
+                self.currentGameList = response.data;
+                return self.currentGameList;
             })
+    };
+
+    /**
+     *  Call game server to start a new game of the specified type.
+     */
+    this.startNewGame = function(gameTypeApples) {
+        $log.log('GameServer.startNewGame: ' + gameTypeApples);
+        var url = 'http://localhost:3000/new/' + (gameTypeApples ? 'a2a' : 'cah');
+        $log.log(url);
+
+        return $http({
+            method: 'GET',
+            url: url
+        })
+            .catch(function(_error) {
+                $log.warn(_error);
+                $q.reject(_error);
+            })
+            .then(function(response) {
+                $log.log('startNewGame: ' + response);
+                self.currentGame = response.data;
+                self.currentGameId = self.currentGame.gameId;
+                return self.currentGame;
+            })
+    };
+
+    /**
+     *  Set the current game being played.
+     */
+    this.setCurrentGame = function(gameId) {
+        $log.log('GameServer.setCurrentGame: ' + gameId);
+        this.currentGameId = gameId;
+        if (this.currentGameList != null) {
+            this.currentGame = this.currentGameList[gameId];
+        }
     };
 
     /**

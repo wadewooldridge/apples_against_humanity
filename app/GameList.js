@@ -31,8 +31,10 @@ exports.create = function(gameTypeApples) {
     gameList[gameId] = {
         gameId: gameId,
         gameTypeApples: gameTypeApples,
-        host: '',
-        playerCount: 0
+        gameName: '',
+        hostName: '',
+        playerCount: 0,
+        playerNames: []
     };
     return gameId;
 };
@@ -73,7 +75,7 @@ exports.getById = function(gameId) {
 /**
  *  Join an existing game.
  */
-exports.join = function(gameId, name, server) {
+exports.join = function(gameId, userName, server) {
     var success = true;
     console.log('gameList.join: ' + gameId + ', ' + name + ', ' + server);
     console.dir(server);

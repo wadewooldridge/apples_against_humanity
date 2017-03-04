@@ -33,6 +33,7 @@ exports.create = function(gameTypeApples) {
         gameTypeApples: gameTypeApples,
         gameName: '',
         hostName: '',
+        launched: false,
         playerCount: 0,
         playerNames: []
     };

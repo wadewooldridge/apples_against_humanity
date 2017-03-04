@@ -1,5 +1,14 @@
 <div id="new-game-div">
-    <div class="main-title">
-        <h2 class="page-title">New Game</h2>
-    </div>
+    <h2 class="page-title">New Game &mdash; Game ID {{ngc.currentGame.gameId}}</h2>
+    <hr>
+    <h2>Choose a name for this game:</h2>
+
+    <h2>Choose a user name:</h2>
+
+    <hr>
+    <h2>Other players:</h2>
+
+    <hr>
+    <h2>When all players are joined:</h2>
+    <button class="launch-game-button" ng-click="ngc.launchGame(true)">Launch The Game</button>
 </div>

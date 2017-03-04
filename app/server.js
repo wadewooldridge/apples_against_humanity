@@ -37,10 +37,9 @@ var gameList = require('./GameList');
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
-server.listen(8080);
 
-// Listen for socket IO requests on port 80.
-server.listen(80);
+// Listen for socket IO requests on port 3001.
+server.listen(3001);
 // Set up view engine: only using Jade for the default error handler; the rest are static pages.
 app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');

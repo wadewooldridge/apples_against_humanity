@@ -127,9 +127,9 @@ app.controller('newGameController', ['$interval', '$location', '$log', 'GameServ
     // This controller's copy of the current game.
     this.currentGame = GameService.getCurrentGame();
 
-    // Variables to model the game name and user (host) name.
+    // Variables to model the game name and player (host) name.
     this.gameName = '';
-    this.userName = '';
+    this.playerName = '';
 
     // Code that gets executed on controller initialization.
     $log.log('ngc:init');
@@ -174,7 +174,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      *  Call game server to get the current list of games.
      */
     this.getGameList = function() {
-        $log.log('GameServer.getGameList');
+        $log.log('GameService.getGameList');
         var url = 'http://localhost:3000/games';
 
         return $http({
@@ -196,7 +196,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      *  Call game server to start a new game of the specified type.
      */
     this.startNewGame = function(gameTypeApples) {
-        $log.log('GameServer.startNewGame: ' + gameTypeApples);
+        $log.log('GameService.startNewGame: ' + gameTypeApples);
         var url = 'http://localhost:3000/new/' + (gameTypeApples ? 'a2a' : 'cah');
         $log.log(url);
 
@@ -220,7 +220,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      *  Set the current game being played.
      */
     this.setCurrentGame = function(gameId) {
-        $log.log('GameServer.setCurrentGame: ' + gameId);
+        $log.log('GameService.setCurrentGame: ' + gameId);
         this.currentGameId = gameId;
         if (this.currentGameList != null) {
             this.currentGame = this.currentGameList[gameId];
@@ -233,18 +233,16 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.connect = function() {
         $log.log('GameService.connect');
 
-        this.socket = function(io) {
-            io.connect('http://localhost:3001');
-            $log.log('socket: ' + socket);
+        this.socket = io('http://localhost:3001');
 
-            socket.on('connection', function() {
-                $log.log('io.connection');
-            });
+        this.socket.on('connect', function () {
+            var socket = this;
+            $log.log('io.connect: ' + socket.id);
+        });
 
-            socket.on('test', function(data) {
-                $log.log('io.test: ' + data);
-            });
-        };
+        this.socket.on('test', function (data) {
+            $log.log('io.test: ',  data);
+        });
 
     }
 

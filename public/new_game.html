@@ -1,14 +1,16 @@
 <div id="new-game-div">
     <h2 class="page-title">New Game &mdash; Game ID {{ngc.currentGame.gameId}}</h2>
+    <img ng-show="ngc.currentGame.gameTypeApples" src="images/a2a_box.jpg">
+    <img ng-show="!ngc.currentGame.gameTypeApples" src="images/cah_box.jpg">
     <hr>
     <h2>Choose a name for this game:</h2>
-    <input type="text" ng-model="ngc.gameName">
+    <input type="text" ng-model="ngc.gameName" ng-change="ngc.onGameNameChange()">
     <h2>Choose a player name:</h2>
-    <input type="text" ng-model="ngc.playerName">
+    <input type="text" ng-model="ngc.playerName" ng-change="ngc.onPlayerNameChange()">
     <hr>
     <h2>Other players:</h2>
 
     <hr>
     <h2>When all players are joined:</h2>
-    <button class="launch-game-button" ng-click="ngc.launchGame(true)">Launch The Game</button>
+    <button class="launch-game-button" ng-click="ngc.onLaunchButton()">Launch The Game</button>
 </div>

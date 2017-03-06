@@ -124,10 +124,8 @@ io.on('connection', function(socket) {
 
     socket.emit('test', {testData: 123});
 
-    socket.on('join', function(data) {
-        console.log('io.join: ' + data);
-        console.dir(data);
-    });
+    // Set up all of the event emitter event handlers in the GameList object.
+    gameList.setEventHandlers(socket);
 });
 
 // Listen for socket IO requests on port 3001.

@@ -64,8 +64,6 @@
     height: 50px;
 }
 
-/* Styling for the Join Game page. */
-
 /* Styling for the New Game page. */
 #new-game-div {
     max-width: 600px;
@@ -75,6 +73,10 @@
 #new-game-div h2 {
     text-align: center;
     margin: 0.5em 0;
+}
+
+#new-game-div img {
+    width: 150px;
 }
 
 #new-game-div input {
@@ -94,6 +96,8 @@
 .launch-game-button:hover {
     border: 2px solid limegreen;
 }
+
+/* Styling for the Join Game page. */
 
 /* Styling for the Play Game page. */
 

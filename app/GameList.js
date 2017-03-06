@@ -61,7 +61,7 @@ function getNextGameId() {
 /**
  *  Create a game.
  */
-exports.create = function(gameTypeApples) {
+exports.create = create = function(gameTypeApples) {
     var gameId = getNextGameId();
     gameList[gameId] = new Game(gameId, gameTypeApples);
     return gameId;
@@ -70,7 +70,7 @@ exports.create = function(gameTypeApples) {
 /**
  *  Get all games.
  */
-exports.getAll = function() {
+exports.getAll = getAll = function() {
     var retObj = {};
     for (var key in gameList) {
         var retMember = gameList[key];
@@ -82,7 +82,7 @@ exports.getAll = function() {
 /**
  *  Get games by gameType.
  */
-exports.getByGameType = function(gameTypeApples) {
+exports.getByGameType = getByGameType = function(gameTypeApples) {
     var retObj = {};
     for (var key in gameList) {
         var retMember = gameList[key];
@@ -96,14 +96,14 @@ exports.getByGameType = function(gameTypeApples) {
 /**
  *  Get games by gameId.
  */
-exports.getById = function(gameId) {
+exports.getById = getById = function(gameId) {
     return gameList[gameId];
 };
 
 /**
  *  Join an existing game.
  */
-exports.join = function(gameId, playerName, server) {
+exports.join = join = function(gameId, playerName, server) {
     var success = true;
     console.log('GameList.join: ' + gameId + ', ' + playerName + ', ' + server);
     console.dir(server);
@@ -119,6 +119,16 @@ exports.setEventHandlers = function(socket) {
 
     socket.on('GameName', function(data) {
         console.log('GameList.setGameName: ', data);
+    });
+
+    socket.on('HostName', function(data) {
+        console.log('GameList.setHostName: ', data);
+    });
+
+    socket.on('JoinGame', function(data) {
+        console.log('GameList.joinGame: ', data);
+        var game = getById(data.gameId);
+        console.log('game: ', game);
     });
 
     socket.on('PlayerName', function(data) {

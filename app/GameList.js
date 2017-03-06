@@ -6,6 +6,41 @@
  */
 
 /**
+ *  Player = main object to hold information about a player.
+ */
+class Player {
+    /**
+     *  Constructor to initialize basic information about the player.
+     */
+    constructor(playerName) {
+        console.log('Player:constructor');
+        this.playerName = playerName;
+    }
+
+}
+
+/**
+ *  Game - main object to hold state of a single game.
+ */
+class Game {
+    /**
+     *  Constructor to initialize basic information about the game.
+     */
+    constructor(gameId, gameTypeApples) {
+        console.log('Game constructor: ' + gameId + ', ' + gameTypeApples);
+        this.gameId = gameId;
+        this.gameTypeApples = gameTypeApples;
+        this.gameName = '';
+        this.hostName = '';
+        this.launched = false;
+
+        // So far, no players.
+        this.playerCount = 0;
+        this.players = [];
+    }
+}
+
+/**
  *  lastGameId - Keep track of last one used.
  */
 var lastGameId = 12345;
@@ -28,7 +63,8 @@ function getNextGameId() {
  */
 exports.create = function(gameTypeApples) {
     var gameId = getNextGameId();
-    gameList[gameId] = {
+    gameList[gameId] = new Game(gameId, gameTypeApples);
+        /*{
         gameId: gameId,
         gameTypeApples: gameTypeApples,
         gameName: '',
@@ -37,6 +73,7 @@ exports.create = function(gameTypeApples) {
         playerCount: 0,
         playerNames: []
     };
+    */
     return gameId;
 };
 
@@ -76,9 +113,9 @@ exports.getById = function(gameId) {
 /**
  *  Join an existing game.
  */
-exports.join = function(gameId, userName, server) {
+exports.join = function(gameId, playerName, server) {
     var success = true;
-    console.log('gameList.join: ' + gameId + ', ' + name + ', ' + server);
+    console.log('gameList.join: ' + gameId + ', ' + playerName + ', ' + server);
     console.dir(server);
 
     return success;

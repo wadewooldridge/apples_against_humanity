@@ -77,6 +77,14 @@
     margin: 0.5em 0;
 }
 
+#new-game-div input {
+    width: 80%;
+    margin-left: 10%;
+    margin-bottom: 1em;
+    text-align: center;
+    font-size: 125%;
+}
+
 .launch-game-button {
     margin: 0.5em auto;
     font-size: 150%;
@@ -87,5 +95,5 @@
     border: 2px solid limegreen;
 }
 
-/* Styling for the Play game page. */
+/* Styling for the Play Game page. */
 

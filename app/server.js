@@ -38,8 +38,6 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
 
-// Listen for socket IO requests on port 3001.
-server.listen(3001);
 // Set up view engine: only using Jade for the default error handler; the rest are static pages.
 app.set('views', path.join(__dirname, '../views'));
 app.set('view engine', 'jade');
@@ -121,13 +119,20 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Handle dispatch for socket IO.
 io.on('connection', function(socket) {
-    console.log('io.connection: ' + socket);
+    console.log('io.connection: ' + socket.id);
+    //console.dir(socket);
+
     socket.emit('test', {testData: 123});
 
     socket.on('join', function(data) {
         console.log('io.join: ' + data);
+        console.dir(data);
     });
 });
+
+// Listen for socket IO requests on port 3001.
+server.listen(3001);
+console.log('socket.io listening on port 3001');
 
 // Drop through to catch 404 and forward to error handler.
 app.use(function(req, res, next) {

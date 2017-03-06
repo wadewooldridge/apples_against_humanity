@@ -64,16 +64,6 @@ function getNextGameId() {
 exports.create = function(gameTypeApples) {
     var gameId = getNextGameId();
     gameList[gameId] = new Game(gameId, gameTypeApples);
-        /*{
-        gameId: gameId,
-        gameTypeApples: gameTypeApples,
-        gameName: '',
-        hostName: '',
-        launched: false,
-        playerCount: 0,
-        playerNames: []
-    };
-    */
     return gameId;
 };
 
@@ -115,9 +105,24 @@ exports.getById = function(gameId) {
  */
 exports.join = function(gameId, playerName, server) {
     var success = true;
-    console.log('gameList.join: ' + gameId + ', ' + playerName + ', ' + server);
+    console.log('GameList.join: ' + gameId + ', ' + playerName + ', ' + server);
     console.dir(server);
 
     return success;
 };
 
+/**
+ *  Set up handlers for the event emitter events we expect on the socket.
+ */
+exports.setEventHandlers = function(socket) {
+    console.log('GameList.setEventHandlers: ' + socket.id);
+
+    socket.on('GameName', function(data) {
+        console.log('GameList.setGameName: ', data);
+    });
+
+    socket.on('PlayerName', function(data) {
+        console.log('GameList.setGameName: ', data);
+    });
+
+};

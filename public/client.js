@@ -131,6 +131,24 @@ app.controller('newGameController', ['$interval', '$location', '$log', 'GameServ
     this.gameName = '';
     this.playerName = '';
 
+    // Handler for changing game name: notify the server.
+    this.onGameNameChange = function() {
+        $log.log('ngc.onGameNameChange: ' + this.gameName);
+        GameService.setCurrentGameName(this.gameName);
+    };
+
+    // Handler for changing player name: notify the server.
+    this.onPlayerNameChange = function() {
+        $log.log('ngc.onPlayerNameChange: ' + this.playerName);
+        GameService.setCurrentPlayerName(this.playerName);
+    };
+
+    // Handler for Launch button.
+    this.onLaunchButton = function() {
+        $log.log('ngc.onLaunchButton');
+
+    };
+
     // Code that gets executed on controller initialization.
     $log.log('ngc:init');
     GameService.connect();
@@ -169,6 +187,26 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      *  Main socket for the connection to the game server.
      */
     this.socket = undefined;
+
+    /**
+     *  Connect a socket to the game server.
+     */
+    this.connect = function() {
+        $log.log('GameService.connect');
+
+        this.socket = io('http://localhost:3001');
+
+        this.socket.on('connect', function () {
+            var socket = this;
+            $log.log('io.connect: ' + socket.id);
+        });
+
+        this.socket.on('test', function (data) {
+            $log.log('io.test: ',  data);
+        });
+
+        this.socket.on('PlayerList')
+    };
 
     /**
      *  Call game server to get the current list of games.
@@ -228,23 +266,30 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     };
 
     /**
-     *  Connect a socket to the game server.
+     *  Set the name of the current game.
      */
-    this.connect = function() {
-        $log.log('GameService.connect');
+    this.setCurrentGameName = function(gameName) {
+        $log.log('GameService.setCurrentGameName: ' + gameName);
+        this.currentGame.gameName = gameName;
+        this.send('GameName', {gameName: gameName});
+    };
 
-        this.socket = io('http://localhost:3001');
+    /**
+     *  Set the name of the current player.
+     */
+    this.setCurrentPlayerName = function(playerName) {
+        $log.log('GameService.setCurrentPlayerName: ' + playerName);
+        this.currentGame.playerName = playerName;
+        this.send('PlayerName', {playerName: playerName});
+    };
 
-        this.socket.on('connect', function () {
-            var socket = this;
-            $log.log('io.connect: ' + socket.id);
-        });
-
-        this.socket.on('test', function (data) {
-            $log.log('io.test: ',  data);
-        });
-
-    }
+    /**
+     *  Send a packet to the server.
+     */
+    this.send = function(message, obj) {
+        $log.log('GameService.send: ' + message + ', ', obj);
+        this.socket.emit(message, obj);
+    };
 
 }]);
 

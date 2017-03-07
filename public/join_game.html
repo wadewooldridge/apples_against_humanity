@@ -1,5 +1,25 @@
 <div id="join-game-div">
-    <div class="main-title">
-        <h2 class="page-title">Join Game</h2>
-    </div>
+    <h2 class="page-title">Join Game &mdash; Game ID {{jgc.currentGame.gameId}}</h2>
+    <img ng-show="jgc.currentGame.gameTypeApples" src="images/a2a_box.jpg">
+    <img ng-show="!jgc.currentGame.gameTypeApples" src="images/cah_box.jpg">
+    <hr>
+    <h2>The name for this game is:</h2>
+    <h2>{{jgc.gameName}}</h2>
+    <h2>Choose a player name:</h2>
+    <input type="text" ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()">
+    <hr>
+    <h2>Players:</h2>
+    <table>
+        <tr>
+            <th>Socket</th>
+            <th>Player Name</th>
+        </tr>
+        <tr ng-repeat="(socket, name) in jgc.playerList">
+            <td>{{socket}}</td>
+            <td>{{name}}</td>
+        </tr>
+    </table>
+    <br>
+    <hr>
+    <h2>Waiting for host to launch the game after all players have joined.</h2>
 </div>

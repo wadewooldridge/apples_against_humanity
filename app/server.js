@@ -37,6 +37,7 @@ var gameList = require('./GameList');
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io')(server);
+gameList.setIo(io);
 
 // Set up view engine: only using Jade for the default error handler; the rest are static pages.
 app.set('views', path.join(__dirname, '../views'));
@@ -50,6 +51,12 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 //app.use(cookieParser());
+
+app.use(function(request, response, next) {
+    response.header('Access-Control-Allow-Origin', '*');
+    response.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
 // Add REST interface dispatching here.
 app.get('/games/a2a', function(request, response) {

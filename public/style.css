@@ -81,10 +81,22 @@
 
 #new-game-div input {
     width: 80%;
-    margin-left: 10%;
     margin-bottom: 1em;
     text-align: center;
     font-size: 125%;
+}
+
+#new-game-div table,
+#new-game-div th,
+#new-game-div td {
+    border: 1px solid black;
+    text-align: center;
+}
+
+#new-game-div table {
+    width: 80%;
+    margin-left: 10%;
+    border-collapse: collapse;
 }
 
 .launch-game-button {
@@ -98,6 +110,40 @@
 }
 
 /* Styling for the Join Game page. */
+#join-game-div {
+    max-width: 600px;
+    text-align: center;
+}
+
+#join-game-div h2 {
+    text-align: center;
+    margin: 0.5em 0;
+}
+
+#join-game-div img {
+    width: 150px;
+}
+
+#join-game-div input {
+    width: 80%;
+    margin-bottom: 1em;
+    text-align: center;
+    font-size: 125%;
+}
+
+#join-game-div table,
+#join-game-div th,
+#join-game-div td {
+    border: 1px solid black;
+    text-align: center;
+}
+
+#join-game-div table {
+    width: 80%;
+    margin-left: 10%;
+    border-collapse: collapse;
+}
+
 
 /* Styling for the Play Game page. */
 

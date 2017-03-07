@@ -16,6 +16,7 @@ class Player {
         console.log('Player.constructor: ' + socket.id);
         this.socket = socket;
         this.playerName = '';
+        this.gameId = undefined;
     }
 
 }
@@ -30,6 +31,7 @@ class Game {
     constructor(gameId, gameTypeApples) {
         console.log('Game constructor: ' + gameId + ', ' + gameTypeApples);
         this.gameId = gameId;
+        this.roomId = 'Room-' + gameId;
         this.gameTypeApples = gameTypeApples;
         this.gameName = '';
         this.hostName = '';
@@ -40,6 +42,11 @@ class Game {
         this.playerList = {};
     }
 }
+
+/**
+ *  io - Copy of io from server.js.
+ */
+var io = undefined;
 
 /**
  *  lastGameId - Keep track of last one used.
@@ -87,7 +94,6 @@ exports.createPlayer = createPlayer = function(socket) {
  */
 exports.getAll = getAll = function() {
     console.log('getAll');
-    console.dir(gameList);
     var retObj = {};
     for (var key in gameList) {
         var retMember = gameList[key];
@@ -124,8 +130,12 @@ exports.getDebugDump = function() {
     var playerListCopy = {};
     for (var key in playerList) {
         var player = playerList[key];
+
+        // Note that we do not try to clone the entire Player object; that can cause loops in the data.
+        // That does mean we have to modify this code if new attributes are added to the Player object.
         playerListCopy[key] = {
-            playerName: player.playerName
+            playerName: player.playerName,
+            gameId: player.gameId
         }
     }
 
@@ -134,17 +144,6 @@ exports.getDebugDump = function() {
         playerList: playerListCopy,
         gameList: gameList
     }
-};
-
-/**
- *  Join an existing game.
- */
-exports.join = join = function(gameId, playerName, server) {
-    var success = true;
-    console.log('GameList.join: ' + gameId + ', ' + playerName + ', ' + server);
-    console.dir(server);
-
-    return success;
 };
 
 /**
@@ -157,17 +156,35 @@ exports.setEventHandlers = function(socket) {
         var gameId = data.gameId;
         var gameName = data.gameName;
         console.log('GameList.setGameName: ' + gameId + ' = ' + gameName);
-        gameList[gameId].gameName = gameName;
+        var game = gameList[gameId];
+        game.gameName = gameName;
+
+        // Notify all players of the updated game name.
+        io.to(game.roomId).emit('GameName', {gameName: gameName});
     });
 
     socket.on('JoinGame', function(data) {
-        console.log('GameList.joinGame: ' + data.gameId + ' + ' + socket.id);
+        var gameId = data.gameId;
+        console.log('GameList.joinGame: ' + gameId + ' + ' + socket.id);
         var player = playerList[socket.id];
-        var game = getById(data.gameId);
+        var game = getById(gameId);
         if (game) {
             game.playerCount++;
             game.playerList[socket.id] = player.playerName;
+            player.gameId = gameId;
+
+            // Use the gameId as the socket.io room identifier.
+            socket.join(game.roomId);
+
+            // Notify this player that the JoinGame succeeded.
             socket.emit('JoinSucceeded', {});
+
+            // Notify this player of the current game name.
+            socket.emit('GameName', {gameName: game.gameName});
+
+            // Notify all players of the updated Player list.
+            io.to(game.roomId).emit('PlayerList', {playerList: game.playerList});
+
         } else {
             console.log('GameList:joinGame failed to find gameId: ' + gameId);
             socket.emit('JoinFailed', {reason: 'Game ID ' + gameId + ' not found.'})
@@ -177,8 +194,28 @@ exports.setEventHandlers = function(socket) {
 
     socket.on('PlayerName', function(data) {
         console.log('GameList.setPlayerName: ' + socket.id + ' = ' + data.playerName);
+
+        // Update the playerName in the Player object.
         var player = playerList[socket.id];
         player.playerName = data.playerName;
+
+        // If the player is in a game, update the playerName in the Game object.
+        var gameId = player.gameId;
+        if (gameId) {
+            var game = getById(gameId);
+            game.playerList[socket.id] = data.playerName;
+
+            // Notify all players of the updated Player list.
+            io.to(game.roomId).emit('PlayerList', {playerList: game.playerList});
+        }
     });
 
+};
+
+/**
+ *  Set up handlers for the event emitter events we expect on the socket.
+ */
+exports.setIo = function(ioCopy) {
+    console.log('GameList.setIo');
+    io = ioCopy;
 };

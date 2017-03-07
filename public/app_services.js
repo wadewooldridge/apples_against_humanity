@@ -53,7 +53,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.getGameList = function() {
         $log.log('GameService.getGameList');
-        var url = 'http://localhost:3000/games';
+        var url = 'http://192.168.1.137:3000/games';
 
         return $http({
             method: 'GET',
@@ -75,7 +75,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.startNewGame = function(gameTypeApples) {
         $log.log('GameService.startNewGame: ' + gameTypeApples);
-        var url = 'http://localhost:3000/new/' + (gameTypeApples ? 'a2a' : 'cah');
+        var url = 'http://192.168.1.137:3000/new/' + (gameTypeApples ? 'a2a' : 'cah');
         $log.log(url);
 
         return $http({
@@ -113,7 +113,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      *  Check if the controller has requested a callback for this message, and if so, call it back.
      */
     this.checkCallback = function(message, data) {
-        $log.log('GameService.checkCallback: ' + message);
+        //$log.log('GameService.checkCallback: ' + message);
         var cb = this.callbacks[message];
         if (cb) {
             cb(data);
@@ -126,7 +126,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.connect = function() {
         $log.log('GameService.connect');
 
-        this.socket = io('http://localhost:3001');
+        this.socket = io('http://192.168.1.137:3001');
 
         this.socket.on('connect', function () {
             var socket = this;
@@ -138,22 +138,27 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             $log.log('io.test: ',  data);
         });
 
+        // These various handlers received messages from the server, update the
+        // service's copy of any data, and call back to the controller as registered.
+        this.socket.on('GameName', function(data) {
+            $log.log('on.GameName');
+            self.checkCallback('GameName', data);
+        });
+
         this.socket.on('JoinFailed', function(data) {
-            $log.log('JoinFailed');
+            $log.log('on.JoinFailed');
             self.checkCallback('JoinFailed', data);
         });
 
         this.socket.on('JoinSucceeded', function(data) {
-            $log.log('JoinSucceeded');
+            $log.log('on.JoinSucceeded');
             self.checkCallback('JoinSucceeded', data);
         });
 
         this.socket.on('PlayerList', function(data) {
-            $log.log('PlayerList');
+            $log.log('on.PlayerList: ', data);
             self.checkCallback('PlayerList', data);
         });
-
-        this.socket.on('PlayerList')
     };
 
     /**

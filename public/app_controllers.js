@@ -75,27 +75,56 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
 }]);
 
 // Controller for Join Game page.
-app.controller('joinGameController', ['$interval', '$location', '$log', 'GameService', function($interval, $location, $log, GameService){
+app.controller('joinGameController', ['$interval', '$location', '$log', '$scope', 'GameService', function($interval, $location, $log, $scope, GameService){
     $log.log('joinGameController');
+    var self = this;
 
     // This controller's copy of the current game.
     this.currentGame = GameService.getCurrentGame();
 
-    // Variable to model the player name.
+    // Variables to model the game name and player (host) name.
+    this.gameName = '<tbd>';
     this.playerName = '';
+
+    // Variable to model the PlayerList received from the server.
+    this.playerList = {};
+
+    // Handler for changing player name: notify the server.
+    this.onPlayerNameChange = function() {
+        $log.log('ngc.onPlayerNameChange: ' + this.playerName);
+        GameService.setCurrentPlayerName(this.playerName);
+    };
 
     // Code that gets executed on controller initialization.
     $log.log('jgc:init');
     GameService.connect();
     GameService.registerCallbacks({
-
+        GameName: function(data) {
+            $log.log('cb.GameName: ', data);
+            self.gameName = data.gameName;
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
+        JoinSucceeded: function(data) {
+            $log.log('cb.JoinSucceeded: ', data);
+        },
+        JoinFailed: function(data) {
+            $log.log('cb.JoinFailed: ', data);
+        },
+        PlayerList: function(data) {
+            $log.log('cb.PlayerList: ', data);
+            self.playerList = data.playerList;
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        }
     });
 
 }]);
 
 // Controller for New Game page.
-app.controller('newGameController', ['$interval', '$location', '$log', 'GameService', function($interval, $location, $log, GameService){
+app.controller('newGameController', ['$interval', '$location', '$log', '$scope', 'GameService', function($interval, $location, $log, $scope, GameService){
     $log.log('newGameController');
+    var self = this;
 
     // This controller's copy of the current game.
     this.currentGame = GameService.getCurrentGame();
@@ -105,7 +134,7 @@ app.controller('newGameController', ['$interval', '$location', '$log', 'GameServ
     this.playerName = '';
 
     // Variable to model the PlayerList received from the server.
-    this.playerList = [];
+    this.playerList = {};
 
     // Handler for changing game name: notify the server.
     this.onGameNameChange = function() {
@@ -122,7 +151,6 @@ app.controller('newGameController', ['$interval', '$location', '$log', 'GameServ
     // Handler for Launch button.
     this.onLaunchButton = function() {
         $log.log('ngc.onLaunchButton');
-
     };
 
     // Code that gets executed on controller initialization.
@@ -130,14 +158,16 @@ app.controller('newGameController', ['$interval', '$location', '$log', 'GameServ
     GameService.connect();
     GameService.registerCallbacks({
         JoinSucceeded: function(data) {
-            $log.log('JoinSucceeded: ', data);
+            $log.log('cb.JoinSucceeded: ', data);
         },
         JoinFailed: function(data) {
-            $log.log('JoinFailed: ', data);
+            $log.log('cb.JoinFailed: ', data);
         },
         PlayerList: function(data) {
-            $log.log('PlayerList: ', data);
-            self.playerList = data;
+            $log.log('cb.PlayerList: ', data);
+            self.playerList = data.playerList;
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
         }
     });
 

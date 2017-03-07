@@ -8,9 +8,19 @@
     <h2>Choose a player name:</h2>
     <input type="text" ng-model="ngc.playerName" ng-change="ngc.onPlayerNameChange()">
     <hr>
-    <h2>Other players:</h2>
-
+    <h2>Players:</h2>
+        <table>
+            <tr>
+                <th>Socket</th>
+                <th>Player Name</th>
+            </tr>
+            <tr ng-repeat="(socket, name) in ngc.playerList">
+                <td>{{socket}}</td>
+                <td>{{name}}</td>
+            </tr>
+        </table>
+    <br>
     <hr>
-    <h2>When all players are joined:</h2>
+    <h2>When all players have joined:</h2>
     <button class="launch-game-button" ng-click="ngc.onLaunchButton()">Launch The Game</button>
 </div>

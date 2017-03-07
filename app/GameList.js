@@ -12,9 +12,10 @@ class Player {
     /**
      *  Constructor to initialize basic information about the player.
      */
-    constructor(playerName) {
-        console.log('Player:constructor');
-        this.playerName = playerName;
+    constructor(socket) {
+        console.log('Player.constructor: ' + socket.id);
+        this.socket = socket;
+        this.playerName = '';
     }
 
 }
@@ -36,7 +37,7 @@ class Game {
 
         // So far, no players.
         this.playerCount = 0;
-        this.players = [];
+        this.playerList = {};
     }
 }
 
@@ -51,6 +52,11 @@ var lastGameId = 12345;
 var gameList = {};
 
 /**
+ *  playerList - Main list of active players, keyed by socket ID.
+ */
+var playerList = {};
+
+/**
  *  getNextGameId - Get next ID and update the global.
  */
 function getNextGameId() {
@@ -61,16 +67,27 @@ function getNextGameId() {
 /**
  *  Create a game.
  */
-exports.create = create = function(gameTypeApples) {
+exports.createGame = createGame = function(gameTypeApples) {
     var gameId = getNextGameId();
     gameList[gameId] = new Game(gameId, gameTypeApples);
     return gameId;
 };
 
 /**
+ *  Create a Player object for the socket.
+ */
+exports.createPlayer = createPlayer = function(socket) {
+    var player = new Player(socket);
+    playerList[socket.id] = player;
+    return player;
+};
+
+/**
  *  Get all games.
  */
 exports.getAll = getAll = function() {
+    console.log('getAll');
+    console.dir(gameList);
     var retObj = {};
     for (var key in gameList) {
         var retMember = gameList[key];
@@ -101,6 +118,25 @@ exports.getById = getById = function(gameId) {
 };
 
 /**
+ *  Get debug dump information.
+ */
+exports.getDebugDump = function() {
+    var playerListCopy = {};
+    for (var key in playerList) {
+        var player = playerList[key];
+        playerListCopy[key] = {
+            playerName: player.playerName
+        }
+    }
+
+    return {
+        lastGameId: lastGameId,
+        playerList: playerListCopy,
+        gameList: gameList
+    }
+};
+
+/**
  *  Join an existing game.
  */
 exports.join = join = function(gameId, playerName, server) {
@@ -118,21 +154,31 @@ exports.setEventHandlers = function(socket) {
     console.log('GameList.setEventHandlers: ' + socket.id);
 
     socket.on('GameName', function(data) {
-        console.log('GameList.setGameName: ', data);
-    });
-
-    socket.on('HostName', function(data) {
-        console.log('GameList.setHostName: ', data);
+        var gameId = data.gameId;
+        var gameName = data.gameName;
+        console.log('GameList.setGameName: ' + gameId + ' = ' + gameName);
+        gameList[gameId].gameName = gameName;
     });
 
     socket.on('JoinGame', function(data) {
-        console.log('GameList.joinGame: ', data);
+        console.log('GameList.joinGame: ' + data.gameId + ' + ' + socket.id);
+        var player = playerList[socket.id];
         var game = getById(data.gameId);
-        console.log('game: ', game);
+        if (game) {
+            game.playerCount++;
+            game.playerList[socket.id] = player.playerName;
+            socket.emit('JoinSucceeded', {});
+        } else {
+            console.log('GameList:joinGame failed to find gameId: ' + gameId);
+            socket.emit('JoinFailed', {reason: 'Game ID ' + gameId + ' not found.'})
+        }
+
     });
 
     socket.on('PlayerName', function(data) {
-        console.log('GameList.setGameName: ', data);
+        console.log('GameList.setPlayerName: ' + socket.id + ' = ' + data.playerName);
+        var player = playerList[socket.id];
+        player.playerName = data.playerName;
     });
 
 };

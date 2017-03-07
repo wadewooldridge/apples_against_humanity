@@ -68,44 +68,21 @@ app.get('/games', function(request, response) {
 });
 
 app.get('/new/a2a', function(request, response) {
-    var gameId = gameList.create(true);
+    var gameId = gameList.createGame(true);
     response.setHeader('Content-Type', 'application/json');
     response.send(JSON.stringify(gameList.getById(gameId)));
 });
 
 app.get('/new/cah', function(request, response) {
-    var gameId = gameList.create(false);
+    var gameId = gameList.createGame(false);
     response.setHeader('Content-Type', 'application/json');
     response.send(JSON.stringify(gameList.getById(gameId)));
 });
 
-app.get('/join', function(request, response, next) {
-    var gameId = request.param('id');
-    var name = request.param('name');
-    var err = undefined;
-
-    if (!gameId || !name) {
-        err = new Error('Invalid parameter');
-        err.status = 400;
-        next(err);
-    } else {
-        var game = gameList.getById(gameId);
-        if (!game) {
-            err = new Error('Not found');
-            err.status = 404;
-            next(err);
-        } else {
-            var success = gameList.join(gameId, name, server);
-            if (success) {
-                response.setHeader('Content-Type', 'application/json');
-                response.send(JSON.stringify(gameList.getById(gameId)));
-            } else {
-                err = new Error('Join failed.');
-                err.status = 500;
-                next(err);
-            }
-        }
-    }
+app.get('/debug', function(request, response) {
+    var debugDump = gameList.getDebugDump();
+    response.setHeader('Content-Type', 'application/json');
+    response.send(JSON.stringify(debugDump));
 });
 
 // Serve default page as index.html.
@@ -123,6 +100,9 @@ io.on('connection', function(socket) {
     //console.dir(socket);
 
     socket.emit('test', {testData: 123});
+
+    // Create a Player object for the existing socket.
+    gameList.createPlayer(socket);
 
     // Set up all of the event emitter event handlers in the GameList object.
     gameList.setEventHandlers(socket);

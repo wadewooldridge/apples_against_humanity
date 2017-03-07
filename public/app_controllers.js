@@ -104,6 +104,9 @@ app.controller('newGameController', ['$interval', '$location', '$log', 'GameServ
     this.gameName = '';
     this.playerName = '';
 
+    // Variable to model the PlayerList received from the server.
+    this.playerList = [];
+
     // Handler for changing game name: notify the server.
     this.onGameNameChange = function() {
         $log.log('ngc.onGameNameChange: ' + this.gameName);
@@ -126,7 +129,16 @@ app.controller('newGameController', ['$interval', '$location', '$log', 'GameServ
     $log.log('ngc:init');
     GameService.connect();
     GameService.registerCallbacks({
-
+        JoinSucceeded: function(data) {
+            $log.log('JoinSucceeded: ', data);
+        },
+        JoinFailed: function(data) {
+            $log.log('JoinFailed: ', data);
+        },
+        PlayerList: function(data) {
+            $log.log('PlayerList: ', data);
+            self.playerList = data;
+        }
     });
 
 }]);

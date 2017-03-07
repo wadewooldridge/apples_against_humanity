@@ -39,6 +39,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.socket = undefined;
 
+    /**
+     *  Callbacks that the controller has requested.
+     */
+    this.callbacks = {};
+
     /********************************************************************************/
     /*  Methods related to the Web API.                                             */
     /********************************************************************************/
@@ -105,6 +110,17 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     /********************************************************************************/
 
     /**
+     *  Check if the controller has requested a callback for this message, and if so, call it back.
+     */
+    this.checkCallback = function(message, data) {
+        $log.log('GameService.checkCallback: ' + message);
+        var cb = this.callbacks[message];
+        if (cb) {
+            cb(data);
+        }
+    };
+
+    /**
      *  Connect a socket to the game server.
      */
     this.connect = function() {
@@ -122,6 +138,21 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             $log.log('io.test: ',  data);
         });
 
+        this.socket.on('JoinFailed', function(data) {
+            $log.log('JoinFailed');
+            self.checkCallback('JoinFailed', data);
+        });
+
+        this.socket.on('JoinSucceeded', function(data) {
+            $log.log('JoinSucceeded');
+            self.checkCallback('JoinSucceeded', data);
+        });
+
+        this.socket.on('PlayerList', function(data) {
+            $log.log('PlayerList');
+            self.checkCallback('PlayerList', data);
+        });
+
         this.socket.on('PlayerList')
     };
 
@@ -130,7 +161,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.registerCallbacks = function(callbacks) {
         $log.log('GameService.registerCallbacks: ', callbacks);
-
+        this.callbacks = callbacks;
     };
 
     /**
@@ -139,7 +170,9 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.setCurrentGameName = function(gameName) {
         $log.log('GameService.setCurrentGameName: ' + gameName);
         this.currentGame.gameName = gameName;
-        this.send('GameName', {gameName: gameName});
+        this.send('GameName', {
+            gameId: this.currentGame.gameId,
+            gameName: gameName});
     };
 
     /**

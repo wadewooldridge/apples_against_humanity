@@ -16,8 +16,8 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
     var self = this;
 
     // Default to no games found.
-    this.gameList = undefined;
-    this.gameListEmpty = true;
+    this.gameTable = undefined;
+    this.gameTableEmpty = true;
 
     // Interval promise for updates; need to cancel when leaving this controller.
     this.intervalPromise = undefined;
@@ -38,10 +38,10 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
     // Handle interval timer: poll for game list.
     this.handleIntervalTimer = function() {
         $log.log('cgc.handleIntervalTimer');
-        GameService.getGameList().then(function(gameList) {
-            $log.log('handleIntervalTimer: got new gameList');
-            self.gameList = gameList;
-            self.gameListEmpty = (Object.keys(gameList).length === 0);
+        GameService.getGameTable().then(function(gameTable) {
+            $log.log('handleIntervalTimer: got new gameTable');
+            self.gameTable = gameTable;
+            self.gameTableEmpty = (Object.keys(gameTable).length === 0);
         })
     };
 
@@ -87,7 +87,7 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
     this.playerName = '';
 
     // Variable to model the PlayerList received from the server.
-    this.playerList = {};
+    this.playerList = [];
 
     // Handler for changing player name: notify the server.
     this.onPlayerNameChange = function() {
@@ -134,7 +134,7 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
     this.playerName = '';
 
     // Variable to model the PlayerList received from the server.
-    this.playerList = {};
+    this.playerList = [];
 
     // Handler for changing game name: notify the server.
     this.onGameNameChange = function() {

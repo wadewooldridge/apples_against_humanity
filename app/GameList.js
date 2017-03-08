@@ -15,8 +15,15 @@ class Player {
     constructor(socket) {
         console.log('Player.constructor: ' + socket.id);
         this.socket = socket;
+        this.socketId = socket.id;
         this.playerName = '';
+        // Which game has this player joined.
         this.gameId = undefined;
+        // Player is the host of this game.
+        this.host = false;
+        // Game variables.
+        this.score = 0;
+        this.up = false;
     }
 
 }
@@ -34,12 +41,11 @@ class Game {
         this.roomId = 'Room-' + gameId;
         this.gameTypeApples = gameTypeApples;
         this.gameName = '';
-        this.hostName = '';
         this.launched = false;
 
         // So far, no players.
         this.playerCount = 0;
-        this.playerList = {};
+        this.playerList = [];
     }
 }
 
@@ -54,14 +60,14 @@ var io = undefined;
 var lastGameId = 12345;
 
 /**
- *  gameList - Main list of active games, keyed by gameCode.
+ *  gameTable - Main table of active games, keyed by gameCode.
  */
-var gameList = {};
+var gameTable = {};
 
 /**
- *  playerList - Main list of active players, keyed by socket ID.
+ *  playerTable - Main table of active players, keyed by socket ID.
  */
-var playerList = {};
+var playerTable = {};
 
 /**
  *  getNextGameId - Get next ID and update the global.
@@ -72,11 +78,59 @@ function getNextGameId() {
 }
 
 /**
+ *  Copy the game object, including a sanitized player list with the sockets.
+ */
+function copyGame(game) {
+    //console.log('copyGame: ', game);
+    var gameCopy = {};
+
+    for (var key in game) {
+        if (key === 'playerList') {
+            gameCopy.playerList = copyPlayerList(game);
+        } else {
+            gameCopy[key] = game[key];
+        }
+    }
+    return gameCopy;
+}
+
+/**
+ *  Copy a player, sanitized by throwing out the socket field.
+ */
+function copyPlayer(player) {
+    //console.log('copyPlayer: ', player);
+    var playerCopy = {};
+
+    for (var key in player) {
+        if (key !== 'socket') {
+            playerCopy[key] = player[key];
+        }
+    }
+    return playerCopy;
+}
+
+/**
+ *  Copy the player list from a game, sanitizing it to return to the client.
+ *  The player list contains the socket and all of its information, so we
+ *  don't want to just do a copy of it.
+ */
+function copyPlayerList(game) {
+    //console.log('copyPlayerList: ', game);
+    var playerList = game.playerList;
+    var playerListCopy = [];
+
+    for (var i = 0; i < playerList.length; i++) {
+        playerListCopy.push(copyPlayer(game.playerList[i]));
+    }
+    return playerListCopy;
+}
+
+/**
  *  Create a game.
  */
 exports.createGame = createGame = function(gameTypeApples) {
     var gameId = getNextGameId();
-    gameList[gameId] = new Game(gameId, gameTypeApples);
+    gameTable[gameId] = new Game(gameId, gameTypeApples);
     return gameId;
 };
 
@@ -85,19 +139,19 @@ exports.createGame = createGame = function(gameTypeApples) {
  */
 exports.createPlayer = createPlayer = function(socket) {
     var player = new Player(socket);
-    playerList[socket.id] = player;
+    playerTable[socket.id] = player;
     return player;
 };
 
 /**
  *  Get all games.
  */
-exports.getAll = getAll = function() {
-    console.log('getAll');
+exports.getAllGames = getAllGames = function() {
+    console.log('GameList.getAllGames');
     var retObj = {};
-    for (var key in gameList) {
-        var retMember = gameList[key];
-        retObj[key] = JSON.parse(JSON.stringify(retMember));
+    for (var key in gameTable) {
+        var game = gameTable[key];
+        retObj[key] = copyGame(game);
     }
     return retObj;
 };
@@ -105,12 +159,12 @@ exports.getAll = getAll = function() {
 /**
  *  Get games by gameType.
  */
-exports.getByGameType = getByGameType = function(gameTypeApples) {
+exports.getGamesByGameType = getGamesByGameType = function(gameTypeApples) {
     var retObj = {};
-    for (var key in gameList) {
-        var retMember = gameList[key];
-        if (retMember.gameTypeApples === gameTypeApples) {
-            retObj[key] = JSON.parse(JSON.stringify(retMember));
+    for (var key in gameTable) {
+        var game = gameTable[key];
+        if (game.gameTypeApples === gameTypeApples) {
+            retObj[key] = copyGame(game);
         }
     }
     return retObj;
@@ -119,30 +173,30 @@ exports.getByGameType = getByGameType = function(gameTypeApples) {
 /**
  *  Get games by gameId.
  */
-exports.getById = getById = function(gameId) {
-    return gameList[gameId];
+exports.getGameByGameId = getGameByGameId = function(gameId) {
+    return gameTable[gameId];
 };
 
 /**
  *  Get debug dump information.
  */
 exports.getDebugDump = function() {
-    var playerListCopy = {};
-    for (var key in playerList) {
-        var player = playerList[key];
+    // Build sanitized version of gameTable.
+    var gameTableCopy = {};
+    for (var key in gameTable) {
+        gameTableCopy[key] = copyGame(gameTable[key]);
+    }
 
-        // Note that we do not try to clone the entire Player object; that can cause loops in the data.
-        // That does mean we have to modify this code if new attributes are added to the Player object.
-        playerListCopy[key] = {
-            playerName: player.playerName,
-            gameId: player.gameId
-        }
+    // Build sanititized version of playerTable.
+    var playerTableCopy = {};
+    for (key in playerTable) {
+        playerTableCopy[key] = copyPlayer(playerTable[key]);
     }
 
     return {
         lastGameId: lastGameId,
-        playerList: playerListCopy,
-        gameList: gameList
+        playerTable: playerTableCopy,
+        gameTable: gameTableCopy
     }
 };
 
@@ -156,7 +210,7 @@ exports.setEventHandlers = function(socket) {
         var gameId = data.gameId;
         var gameName = data.gameName;
         console.log('GameList.setGameName: ' + gameId + ' = ' + gameName);
-        var game = gameList[gameId];
+        var game = gameTable[gameId];
         game.gameName = gameName;
 
         // Notify all players of the updated game name.
@@ -165,13 +219,16 @@ exports.setEventHandlers = function(socket) {
 
     socket.on('JoinGame', function(data) {
         var gameId = data.gameId;
-        console.log('GameList.joinGame: ' + gameId + ' + ' + socket.id);
-        var player = playerList[socket.id];
-        var game = getById(gameId);
+        console.log('on.JoinGame: ' + gameId + ' + ' + socket.id);
+        var player = playerTable[socket.id];
+        var game = getGameByGameId(gameId);
         if (game) {
             game.playerCount++;
-            game.playerList[socket.id] = player.playerName;
+            game.playerList.push(player);
             player.gameId = gameId;
+
+            // If the first player in, call him the host.
+            player.host = (game.playerCount === 1);
 
             // Use the gameId as the socket.io room identifier.
             socket.join(game.roomId);
@@ -183,30 +240,29 @@ exports.setEventHandlers = function(socket) {
             socket.emit('GameName', {gameName: game.gameName});
 
             // Notify all players of the updated Player list.
-            io.to(game.roomId).emit('PlayerList', {playerList: game.playerList});
+            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
 
         } else {
-            console.log('GameList:joinGame failed to find gameId: ' + gameId);
+            console.log('on.JoinGame failed to find gameId: ' + gameId);
             socket.emit('JoinFailed', {reason: 'Game ID ' + gameId + ' not found.'})
         }
 
     });
 
     socket.on('PlayerName', function(data) {
-        console.log('GameList.setPlayerName: ' + socket.id + ' = ' + data.playerName);
+        console.log('on.PlayerName: ' + socket.id + ' = ' + data.playerName);
 
         // Update the playerName in the Player object.
-        var player = playerList[socket.id];
+        var player = playerTable[socket.id];
         player.playerName = data.playerName;
 
-        // If the player is in a game, update the playerName in the Game object.
+        // If the player is in a game, notify the other game members of the new name.
         var gameId = player.gameId;
         if (gameId) {
-            var game = getById(gameId);
-            game.playerList[socket.id] = data.playerName;
+            var game = getGameByGameId(gameId);
 
             // Notify all players of the updated Player list.
-            io.to(game.roomId).emit('PlayerList', {playerList: game.playerList});
+            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
         }
     });
 

@@ -99,6 +99,11 @@
     border-collapse: collapse;
 }
 
+#new-game-div table img {
+    height: 1em;
+    width: auto;
+}
+
 .launch-game-button {
     margin: 0.5em auto;
     font-size: 150%;
@@ -144,6 +149,10 @@
     border-collapse: collapse;
 }
 
+#join-game-div table img {
+    height: 1em;
+    width: auto;
+}
 
 /* Styling for the Play Game page. */
 

@@ -12,27 +12,25 @@
     <hr>
     <h2>&mdash; or &mdash;</h2>
     <h2>Join one of the following games:</h2>
-    <div ng-show="cgc.gameListEmpty">
+    <div ng-show="cgc.gameTableEmpty">
         <p>No games found.</p>
     </div>
-    <div ng-show="!cgc.gameListEmpty">
+    <div ng-show="!cgc.gameTableEmpty">
         <table>
             <tr>
                 <th>Game ID</th>
                 <th>Game Type</th>
                 <th>Game Name</th>
-                <th>Host Name</th>
                 <th>Player Count</th>
                 <th></th>
             </tr>
-            <tr ng-repeat="game in cgc.gameList">
+            <tr ng-repeat="game in cgc.gameTable">
                 <td>{{game.gameId}}</td>
                 <td>
                     <img ng-show="game.gameTypeApples" src="images/a2a_box.jpg">
                     <img ng-show="!game.gameTypeApples" src="images/cah_box.jpg">
                 </td>
                 <td>{{game.gameName}}</td>
-                <td>{{game.hostName}}</td>
                 <td>{{game.playerCount}}</td>
                 <td><button class="join-game-button" ng-click="cgc.joinGame(game.gameId)">Join</button></td>
             </tr>

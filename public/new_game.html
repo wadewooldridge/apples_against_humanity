@@ -13,14 +13,18 @@
             <tr>
                 <th>Socket</th>
                 <th>Player Name</th>
+                <th>Self</th>
+                <th>Host</th>
             </tr>
-            <tr ng-repeat="(socket, name) in ngc.playerList">
-                <td>{{socket}}</td>
-                <td>{{name}}</td>
+            <tr ng-repeat="player in ngc.playerList">
+                <td>{{player.socketId}}</td>
+                <td>{{player.playerName}}</td>
+                <td><img src="images/blue_checkmark.png" ng-show="player.self"></td>
+                <td><img src="images/blue_checkmark.png" ng-show="player.host"></td>
             </tr>
         </table>
     <br>
     <hr>
     <h2>When all players have joined:</h2>
-    <button class="launch-game-button" ng-click="ngc.onLaunchButton()">Launch The Game</button>
+    <button class="launch-game-button" ng-enabled="" ng-click="ngc.onLaunchButton()">Launch The Game</button>
 </div>

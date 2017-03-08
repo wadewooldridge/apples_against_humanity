@@ -19,7 +19,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     /**
      *  Current list of possible games.
      */
-    this.currentGameList = undefined;
+    this.currentGameTable = undefined;
 
     /**
      *  Current game being played.
@@ -30,9 +30,9 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     /**
      *  Simpler getter methods.
      */
-    this.getCurrentGameList = function() {return this.currentGameList};
-    this.getCurrentGameId   = function() {return this.currentGameId};
-    this.getCurrentGame     = function() {return this.currentGame};
+    this.getCurrentGameTable    = function() {return this.currentGameTable};
+    this.getCurrentGameId       = function() {return this.currentGameId};
+    this.getCurrentGame         = function() {return this.currentGame};
 
     /**
      *  Main socket for the connection to the game server.
@@ -51,8 +51,8 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     /**
      *  Call game server to get the current list of games.
      */
-    this.getGameList = function() {
-        $log.log('GameService.getGameList');
+    this.getGameTable = function() {
+        $log.log('GameService.getGameTable');
         var url = 'http://192.168.1.137:3000/games';
 
         return $http({
@@ -64,9 +64,9 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
                 $q.reject(_error);
             })
             .then(function(response) {
-                $log.log('getGameList: ' + response);
-                self.currentGameList = response.data;
-                return self.currentGameList;
+                $log.log('getGameTable: ', response);
+                self.currentGameTable = response.data;
+                return self.currentGameTable;
             })
     };
 
@@ -100,8 +100,8 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.setCurrentGame = function(gameId) {
         $log.log('GameService.setCurrentGame: ' + gameId);
         this.currentGameId = gameId;
-        if (this.currentGameList != null) {
-            this.currentGame = this.currentGameList[gameId];
+        if (this.currentGameTable != null) {
+            this.currentGame = this.currentGameTable[gameId];
         }
     };
 
@@ -157,6 +157,14 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
 
         this.socket.on('PlayerList', function(data) {
             $log.log('on.PlayerList: ', data);
+            // Fix up the PlayerList with a flag of whether each user is the current user.
+            var playerList = data.playerList;
+            console.log('ID: ' + self.socket.id);
+            console.dir(playerList);
+            for (var i = 0; i < playerList.length; i++) {
+                var player = playerList[i];
+                player.self = (player.socketId === self.socket.id);
+            }
             self.checkCallback('PlayerList', data);
         });
     };

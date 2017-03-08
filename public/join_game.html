@@ -13,10 +13,14 @@
         <tr>
             <th>Socket</th>
             <th>Player Name</th>
+            <th>Self</th>
+            <th>Host</th>
         </tr>
-        <tr ng-repeat="(socket, name) in jgc.playerList">
-            <td>{{socket}}</td>
-            <td>{{name}}</td>
+        <tr ng-repeat="player in jgc.playerList">
+            <td>{{player.socketId}}</td>
+            <td>{{player.playerName}}</td>
+            <td><img src="images/blue_checkmark.png" ng-show="player.self"></td>
+            <td><img src="images/blue_checkmark.png" ng-show="player.host"></td>
         </tr>
     </table>
     <br>

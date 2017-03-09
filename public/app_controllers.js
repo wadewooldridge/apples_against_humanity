@@ -81,7 +81,8 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
 }]);
 
 // Controller for Join Game page.
-app.controller('joinGameController', ['$interval', '$location', '$log', '$scope', 'GameService', function($interval, $location, $log, $scope, GameService){
+app.controller('joinGameController', ['$interval', '$location', '$log', '$scope', '$window', 'GameService',
+                            function($interval, $location, $log, $scope, $window, GameService){
     $log.log('joinGameController');
     var self = this;
 
@@ -102,6 +103,9 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
     // Handler for Launch button.
     this.onLaunchButton = function() {
         $log.log('jgc.onLaunchButton');
+
+        // Tell the game server that we are launched. We don't change pages until it responds with 'Launched'.
+        GameService.send('Launch', {});
     };
 
     // Handler for changing game name: notify the server.
@@ -132,6 +136,12 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
         JoinFailed: function(data) {
             $log.log('cb.JoinFailed: ', data);
         },
+        Launched: function(data) {
+            $log.log('cb.Launched: ', data);
+            $location.path('/play').replace();
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
@@ -145,7 +155,8 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
 }]);
 
 // Controller for New Game page.
-app.controller('newGameController', ['$interval', '$location', '$log', '$scope', 'GameService', function($interval, $location, $log, $scope, GameService){
+app.controller('newGameController', ['$interval', '$location', '$log', '$scope', '$window', 'GameService',
+                            function($interval, $location, $log, $scope, $window, GameService){
     $log.log('newGameController');
     var self = this;
 
@@ -174,6 +185,9 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
     // Handler for Launch button.
     this.onLaunchButton = function() {
         $log.log('ngc.onLaunchButton');
+
+        // Tell the game server that we are launched. We don't change pages until it responds with 'Launched'.
+        GameService.send('Launch', {});
     };
 
     // Code that gets executed on controller initialization.
@@ -185,6 +199,12 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
         },
         JoinFailed: function(data) {
             $log.log('cb.JoinFailed: ', data);
+        },
+        Launched: function(data) {
+            $log.log('cb.Launched: ', data);
+            $location.path('/play').replace();
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
         },
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
@@ -198,6 +218,30 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
 }]);
 
 // Controller for Play Game page.
-app.controller('playGameController', ['$interval', '$location', '$log', 'GameService', function($interval, $location, $log, GameService){
+app.controller('playGameController', ['$interval', '$location', '$log', '$scope', 'GameService', function($interval, $location, $log, $scope, GameService){
     $log.log('playGameController');
+
+    // Variable to model the PlayerList received from the server.
+    this.playerList = [];
+
+    // Variable to model our hand: the answer cards that we hold.
+    this.answerCardList = [];
+
+    // Code that gets executed on controller initialization.
+    $log.log('ngc:init');
+    GameService.registerCallbacks({
+        PlayerList: function(data) {
+            $log.log('cb.PlayerList: ', data);
+            self.playerList = data.playerList;
+
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        }
+    });
+
+    // Tell the game server that we are ready to start.
+    GameService.send('ReadyToStart', {});
+    // Fill our hand with answer cards.
+    GameService.send('NeedAnswerCards', {holding: this.answerCardList.length})
+
 }]);

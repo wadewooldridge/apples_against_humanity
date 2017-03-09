@@ -24,19 +24,19 @@ app.config(function($routeProvider){
             controllerAs: 'cgc'
         })
         // Join game page.
-        .when('/join',{
+        .when('/join', {
             templateUrl: 'join_game.html',
             controller: 'joinGameController',
             controllerAs: 'jgc'
         })
         // New Game page.
-        .when('/new',{
+        .when('/new', {
             templateUrl: 'new_game.html',
             controller: 'newGameController',
             controllerAs: 'ngc'
         })
         // Play game page.
-        .when('/play',{
+        .when('/play', {
             templateUrl: 'play_game.html',
             controller: 'playGameController',
             controllerAs: 'pgc'

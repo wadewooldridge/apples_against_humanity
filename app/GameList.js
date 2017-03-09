@@ -286,6 +286,26 @@ exports.setEventHandlers = function(socket) {
 
     });
 
+    socket.on('Launch', function(data) {
+        var player = playerTable[socket.id];
+        var game = gameTable[player.gameId];
+        console.log('on.Launch: ' + player.gameId);
+
+        // Load the card decks for the game.
+
+        // Notify all players that the game is launched.
+        io.to(game.roomId).emit('Launched', {});
+    });
+
+    socket.on('NeedAnswerCards', function(data) {
+        var player = playerTable[socket.id];
+        var game = gameTable[player.gameId];
+        console.log('on.NeedAnswerCards: ' + socket.id + ' has ' + data.holding);
+
+        // Send back answer cards to fill out the player's hand.
+
+    });
+
     socket.on('PlayerName', function(data) {
         console.log('on.PlayerName: ' + socket.id + ' = ' + data.playerName);
 
@@ -301,6 +321,15 @@ exports.setEventHandlers = function(socket) {
             // Notify all players of the updated Player list.
             io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
         }
+    });
+
+    socket.on('ReadyToPlay', function(data) {
+        var player = playerTable[socket.id];
+        var game = gameTable[player.gameId];
+        console.log('on.ReadyToPlay: ' + socket.id);
+
+        // Keep track of when everyone is ready, to start the next round.
+
     });
 
 };

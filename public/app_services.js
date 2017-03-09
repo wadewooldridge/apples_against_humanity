@@ -157,6 +157,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
 
         this.socket.on('PlayerList', function(data) {
             $log.log('on.PlayerList: ', data);
+
             // Fix up the PlayerList with a flag of whether each user is the current user.
             var playerList = data.playerList;
             console.log('ID: ' + self.socket.id);
@@ -164,6 +165,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             for (var i = 0; i < playerList.length; i++) {
                 var player = playerList[i];
                 player.self = (player.socketId === self.socket.id);
+
+                // Add a flag in the data of whether the current player is the host.
+                if (player.self) {
+                    data.iAmTheHost = player.host;
+                }
             }
             self.checkCallback('PlayerList', data);
         });

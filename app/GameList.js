@@ -6,7 +6,34 @@
  */
 
 /**
- *  Player = main object to hold information about a player.
+ *  Deck - hold a set of cards and select one at random.
+ */
+class Deck {
+    /**
+     *  Constructor to copy the array of cards passed in.
+     *  Each card is just a string for the text on that card.
+     */
+    constructor(deckName, cardArray) {
+        console.log('Deck.constructor: ' + deckName + ' + ' + cardArray.length + ' cards');
+        this.deckName = deckName;
+        this.cardArray = cardArray.slice();
+    }
+
+    getRandomCard() {
+        console.log('getRandomCard: ' + this.deckName);
+
+        if (this.cardArray.length === 0) {
+            return null;
+        } else {
+            var index = Math.floor(Math.random() * this.cardArray.length);
+            return this.cardArray.splice(index, 1)[0];
+        }
+    }
+
+}
+
+/**
+ *  Player - main object to hold information about a player.
  */
 class Player {
     /**
@@ -21,6 +48,8 @@ class Player {
         this.gameId = undefined;
         // Player is the host of this game.
         this.host = false;
+        // Player is ready to play.
+        this.ready = false;
         // Game variables.
         this.score = 0;
         this.up = false;
@@ -43,8 +72,11 @@ class Game {
         this.gameName = 'TBD';
         this.launched = false;
 
+        // Decks to be used for the game.
+        this.questionDeck = undefined;
+        this.answerDeck = undefined;
+
         // So far, no players.
-        this.playerCount = 0;
         this.playerList = [];
     }
 }
@@ -68,6 +100,15 @@ var gameTable = {};
  *  playerTable - Main table of active players, keyed by socket ID.
  */
 var playerTable = {};
+
+/**
+ *  Master deck arrays - These are loaded once during startup, and copied for individual games.
+ *  Note that question cards are an object with a text and pick count; answer cards are only text.
+ */
+var a2aQuestionDeckArray = [];
+var a2aAnswerDeckArray = [];
+var cahQuestionDeckArray = [];
+var cahAnswerDeckArray = [];
 
 /**
  *  getNextGameId - Get next ID and update the global.
@@ -201,6 +242,37 @@ exports.getDebugDump = function() {
 };
 
 /**
+ *  Load the decks from the JSON files.
+ *  Note that these were imported, and have their own formats.
+ */
+exports.loadMasterDecks = function(a2aJson, cahJson) {
+    console.log('GameList.loadMasterDecks');
+    var i, card;
+
+    // Load A2A decks: questions are green, answers are red.
+    for (i = 0; i < a2aJson.greenCards.length; i++) {
+        card = a2aJson.greenCards[i];
+        a2aQuestionDeckArray.push({text: card.text, pick: 1});
+    }
+
+    for (i = 0; i < a2aJson.redCards.length; i++) {
+        card = a2aJson.redCards[i];
+        a2aAnswerDeckArray.push(card.text);
+    }
+
+    // Load CAH decks: questions are black, answers are white.
+    for (i = 0; i < cahJson.blackCards.length; i++) {
+        card = cahJson.blackCards[i];
+        cahQuestionDeckArray.push(card);
+    }
+
+    for (i = 0; i < cahJson.whiteCards.length; i++) {
+        card = cahJson.whiteCards[i];
+        cahAnswerDeckArray.push(card);
+    }
+};
+
+/**
  *  Set up handlers for the event emitter events we expect on the socket.
  */
 exports.setEventHandlers = function(socket) {
@@ -220,7 +292,6 @@ exports.setEventHandlers = function(socket) {
                     var deletedHost = game.playerList[i].host;
                     console.log('on.disconnect: ' + gameId + ' - ' + socket.id);
                     game.playerList.splice(i, 1);
-                    game.playerCount--;
 
                     if (game.playerList.length === 0) {
                         // If no more players in this game, delete the game.
@@ -260,12 +331,11 @@ exports.setEventHandlers = function(socket) {
         var player = playerTable[socket.id];
         var game = getGameByGameId(gameId);
         if (game) {
-            game.playerCount++;
             game.playerList.push(player);
             player.gameId = gameId;
 
             // If the first player in, call him the host.
-            player.host = (game.playerCount === 1);
+            player.host = (game.playerList.length === 1);
 
             // Use the gameId as the socket.io room identifier.
             socket.join(game.roomId);
@@ -291,7 +361,14 @@ exports.setEventHandlers = function(socket) {
         var game = gameTable[player.gameId];
         console.log('on.Launch: ' + player.gameId);
 
-        // Load the card decks for the game.
+        // Load the card decks for the game. Make a copy of the master decks.
+        if (game.gameTypeApples) {
+            game.questionDeck = new Deck('A2A Questions', a2aQuestionDeckArray);
+            game.answerDeck = new Deck('A2A Answers', a2aAnswerDeckArray);
+        } else {
+            game.questionDeck = new Deck('CAH Questions', cahQuestionDeckArray);
+            game.answerDeck = new Deck('CAH Answers', cahAnswerDeckArray);
+        }
 
         // Notify all players that the game is launched.
         io.to(game.roomId).emit('Launched', {});
@@ -302,8 +379,23 @@ exports.setEventHandlers = function(socket) {
         var game = gameTable[player.gameId];
         console.log('on.NeedAnswerCards: ' + socket.id + ' has ' + data.holding);
 
-        // Send back answer cards to fill out the player's hand.
+        // Send back answer cards to fill out the player's hand. Default to ten cards.
+        var answerCards = [];
+        for (var i = data.holding; i < 10; i++) {
+            var card = game.answerDeck.getRandomCard();
 
+            // Check whether we have run out of cards; should never really happen.
+            if (card === null) {
+                io.to(game.roomId).emit('GameStatus', {gameStatus: 'Game has run out of answer cards.'});
+                break;
+            } else {
+                console.log('on.NeedAnswerCards: ' + card);
+                answerCards.push(card);
+            }
+        }
+
+        // Send the array of new answer cards back to the user.
+        socket.emit('AnswerCards', {answerCards: answerCards});
     });
 
     socket.on('PlayerName', function(data) {
@@ -323,13 +415,31 @@ exports.setEventHandlers = function(socket) {
         }
     });
 
-    socket.on('ReadyToPlay', function(data) {
+    socket.on('ReadyToStart', function(data) {
         var player = playerTable[socket.id];
         var game = gameTable[player.gameId];
-        console.log('on.ReadyToPlay: ' + socket.id);
+        console.log('on.ReadyToStart: ' + socket.id);
+        player.ready = true;
+
+        // Make sure this player has an up-to-date copy of the playerList for the new controller.
+        socket.emit('PlayerList', {playerList: copyPlayerList(game)});
 
         // Keep track of when everyone is ready, to start the next round.
+        var readyCount = 0;
+        var playerCount = game.playerList.length;
+        for (var i = 0; i < playerCount; i++) {
+            if (game.playerList[i].ready)
+                readyCount++;
+        }
 
+        if (readyCount === playerCount) {
+            // Everyone is ready, start the next round.
+            io.to(game.roomId).emit('GameStatus', {gameStatus: 'Everyone is ready.'});
+        } else {
+            // Not everyone is ready yet.
+            io.to(game.roomId).emit('GameStatus',
+                {gameStatus: 'Waiting for players to be ready (' + readyCount + '/' + playerCount + ').'});
+        }
     });
 
 };

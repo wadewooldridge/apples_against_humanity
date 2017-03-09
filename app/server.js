@@ -30,6 +30,9 @@ var bodyParser = require('body-parser');
  *  Program-specific modules.
  */
 var gameList = require('./GameList');
+var a2aJson = require('./assets/apples_to_apples.json');
+var cahJson = require('./assets/cards_against_humanity.json');
+gameList.loadMasterDecks(a2aJson, cahJson);
 
 /**
  *  Create the main Express app.

@@ -1,3 +1,38 @@
 <div id="play-game-div">
     <h2 class="page-title">Play Game &mdash; Game ID {{pgc.currentGame.gameId}}</h2>
+    <div>
+        <h4>Players:</h4>
+        <div id="players-div">
+            <div class="player-div" ng-repeat="player in pgc.playerList">
+                <h4 class="player-name">{{player.playerName}}</h4>
+                <p class="player-score">Score: {{player.score}}</p>
+                <p class="player-flags">
+                    <span ng-show="player.self">Me</span>
+                    <span ng-show="!player.self">&nbsp;</span>
+                    <span ng-show="player.host">Host</span>
+                    <span ng-show="!player.host">&nbsp;</span>
+                    <span ng-show="player.up" class="player-up">Up</span>
+                    <span ng-show="!player.up">&nbsp;</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div id="status-div">
+        <h4>Status: {{pgc.gameStatus}}</h4>
+    </div>
+    <div id="hand-div">
+        <h4>Hand:</h4>
+        <div class="answer-card-front" ng-repeat="card in pgc.answerCardList">
+            <p>{{card}}</p>
+        </div>
+    </div>
+    <div id="board-div">
+        <h4>Board:</h4>
+        <p>Question card for {{pgc.playerUp}}</p>
+        <div class="question-card-front">
+            <p>{{pgc.questionCard.text}}</p>
+            <p ng-show="pgc.questionCard.pick > 1">Pick {{pgc.questionCard.pick}} answers.</p>
+        </div>
+        <hr>
+    </div>
 </div>

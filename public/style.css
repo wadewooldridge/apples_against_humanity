@@ -72,7 +72,7 @@
 
 #new-game-div h2 {
     text-align: center;
-    margin: 0.5em 0;
+    margin: 0.25em 0;
 }
 
 #new-game-div img {
@@ -122,7 +122,7 @@
 
 #join-game-div h2 {
     text-align: center;
-    margin: 0.5em 0;
+    margin: 0.25em 0;
 }
 
 #join-game-div img {
@@ -155,4 +155,65 @@
 }
 
 /* Styling for the Play Game page. */
+#play-game-div {
+    text-align: center;
+}
 
+#play-game-div h2,
+#play-game-div h4 {
+    text-align: center;
+    margin: 0.25em 0;
+}
+
+#players-div {
+    width: 100%;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+    border: 1px solid green;
+}
+
+.player-div {
+    width: 100%;
+    border: 1px solid darkgreen;
+}
+
+.player-div p {
+    margin: 0.25em 0;
+}
+
+.player-up {
+    font-weight: bold;
+    color: darkred;
+}
+
+#status-div {
+    width: 100%;
+    border: 1px solid purple;
+}
+#hand-div {
+    width: 40%;
+    float: left;
+    border: 1px solid blue;
+}
+
+#board-div {
+    width: 60%;
+    float: right;
+    border: 1px solid darkblue;
+}
+
+/* Styling for adapting to mobile displays. */
+@media (orientation: portrait) and (max-width: 500px) {
+    /* Styling for the Play Game page. */
+    #hand-div {
+        width: 100%;
+    }
+
+    #board-div {
+        width: 100%;
+    }
+}

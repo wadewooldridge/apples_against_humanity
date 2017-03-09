@@ -220,20 +220,44 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
 // Controller for Play Game page.
 app.controller('playGameController', ['$interval', '$location', '$log', '$scope', 'GameService', function($interval, $location, $log, $scope, GameService){
     $log.log('playGameController');
+    var self = this;
 
-    // Variable to model the PlayerList received from the server.
+    // This controller's copy of the current game.
+    this.currentGame = GameService.getCurrentGame();
+
+    // PlayerList received from the server.
     this.playerList = [];
 
-    // Variable to model our hand: the answer cards that we hold.
+    // Game status summary from the server.
+    this.gameStatus = '';
+
+    // Current player's hand: the answer cards that we hold.
     this.answerCardList = [];
 
+    // Current question card.
+    this.questionCard = undefined;
+
     // Code that gets executed on controller initialization.
-    $log.log('ngc:init');
+    $log.log('pgc:init');
     GameService.registerCallbacks({
+        AnswerCards: function(data) {
+            $log.log('cb.AnswerCards: ', data);
+            // Add each of the new cards to the hand.
+            for (let i = 0; i < data.answerCards.length; i++) {
+                self.answerCardList.push(data.answerCards[i]);
+            }
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
+        GameStatus: function(data) {
+            $log.log('cb.GameStatus: ', data);
+            self.gameStatus = data.gameStatus;
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
-
             // Doesn't automatically update; do it manually.
             $scope.$apply();
         }

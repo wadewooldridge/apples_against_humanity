@@ -20,12 +20,13 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
     this.gameTableEmpty = true;
 
     // Interval promise for updates; need to cancel when leaving this controller.
+    this.intervalCounter = 0;
     this.intervalPromise = undefined;
 
     // Start the interval timer.
     this.startIntervalTimer = function() {
         $log.log('cgc.startIntervalTimer');
-        this.intervalPromise = $interval(this.handleIntervalTimer, 2000);
+        this.intervalPromise = $interval(this.handleIntervalTimer, 500);
     };
 
     // Stop the interval timer.
@@ -37,6 +38,11 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
 
     // Handle interval timer: poll for game list.
     this.handleIntervalTimer = function() {
+        // First interval is 500ms, then 2s after that.
+        self.intervalCounter++;
+        if (self.intervalCounter % 4 !== 1)
+            return;
+
         $log.log('cgc.handleIntervalTimer');
         GameService.getGameTable().then(function(gameTable) {
             $log.log('handleIntervalTimer: got new gameTable');
@@ -83,15 +89,30 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
     this.currentGame = GameService.getCurrentGame();
 
     // Variables to model the game name and player (host) name.
-    this.gameName = '<tbd>';
-    this.playerName = '';
+    this.gameName = '';
+    this.playerName = 'TBD';
 
     // Variable to model the PlayerList received from the server.
     this.playerList = [];
 
+    // Flag of whether the current user is the host of the game; this can change dynamically
+    // if the original host disconnects from the game, and allows an alternate to Launch the game.
+    this.iAmTheHost = false;
+
+    // Handler for Launch button.
+    this.onLaunchButton = function() {
+        $log.log('jgc.onLaunchButton');
+    };
+
+    // Handler for changing game name: notify the server.
+    this.onGameNameChange = function() {
+        $log.log('ngc.onGameNameChange: ' + this.gameName);
+        GameService.setCurrentGameName(this.gameName);
+    };
+
     // Handler for changing player name: notify the server.
     this.onPlayerNameChange = function() {
-        $log.log('ngc.onPlayerNameChange: ' + this.playerName);
+        $log.log('jgc.onPlayerNameChange: ' + this.playerName);
         GameService.setCurrentPlayerName(this.playerName);
     };
 
@@ -114,6 +135,8 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
+            self.iAmTheHost = data.iAmTheHost;
+
             // Doesn't automatically update; do it manually.
             $scope.$apply();
         }
@@ -130,8 +153,8 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
     this.currentGame = GameService.getCurrentGame();
 
     // Variables to model the game name and player (host) name.
-    this.gameName = '';
-    this.playerName = '';
+    this.gameName = 'TBD';
+    this.playerName = 'TBD';
 
     // Variable to model the PlayerList received from the server.
     this.playerList = [];
@@ -166,6 +189,7 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
+
             // Doesn't automatically update; do it manually.
             $scope.$apply();
         }

@@ -16,7 +16,7 @@ class Player {
         console.log('Player.constructor: ' + socket.id);
         this.socket = socket;
         this.socketId = socket.id;
-        this.playerName = '';
+        this.playerName = 'TBD';
         // Which game has this player joined.
         this.gameId = undefined;
         // Player is the host of this game.
@@ -40,7 +40,7 @@ class Game {
         this.gameId = gameId;
         this.roomId = 'Room-' + gameId;
         this.gameTypeApples = gameTypeApples;
-        this.gameName = '';
+        this.gameName = 'TBD';
         this.launched = false;
 
         // So far, no players.
@@ -206,6 +206,43 @@ exports.getDebugDump = function() {
 exports.setEventHandlers = function(socket) {
     console.log('GameList.setEventHandlers: ' + socket.id);
 
+    // Handle disconnect.
+    socket.on('disconnect', function() {
+        console.log('on.disconnect: ' + socket.id);
+        var player = playerTable[socket.id];
+
+        // If joined in a game, remove from the game.
+        var gameId = player.gameId;
+        if (gameId) {
+            var game = gameTable[gameId];
+            for (var i = 0; i < game.playerList.length; i++) {
+                if (game.playerList[i].socketId === socket.id) {
+                    var deletedHost = game.playerList[i].host;
+                    console.log('on.disconnect: ' + gameId + ' - ' + socket.id);
+                    game.playerList.splice(i, 1);
+                    game.playerCount--;
+
+                    if (game.playerList.length === 0) {
+                        // If no more players in this game, delete the game.
+                        console.log('on.disconnect: deleting gameId ' + gameId);
+                        delete gameTable[gameId];
+                    } else if (deletedHost) {
+                        // Reassign host flag to the next user.
+                        game.playerList[0].host = true;
+                    }
+                    break;
+                }
+            }
+
+            // Notify all players of the updated Player list.
+            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
+        }
+
+        // Remove from the playerTable.
+        delete playerTable[socket.id];
+    });
+
+    // Event emitter handlers for the game.
     socket.on('GameName', function(data) {
         var gameId = data.gameId;
         var gameName = data.gameName;

@@ -3,8 +3,14 @@
     <img ng-show="jgc.currentGame.gameTypeApples" src="images/a2a_box.jpg">
     <img ng-show="!jgc.currentGame.gameTypeApples" src="images/cah_box.jpg">
     <hr>
-    <h2>The name for this game is:</h2>
-    <h2>{{jgc.gameName}}</h2>
+    <div ng-show="jgc.iAmTheHost">
+        <h2>Choose a name for this game:</h2>
+        <input type="text" ng-model="jgc.gameName" ng-change="jgc.onGameNameChange()">
+    </div>
+    <div ng-show="!jgc.iAmTheHost">
+        <h2>The name for this game is:</h2>
+        <h2>{{jgc.gameName}}</h2>
+    </div>
     <h2>Choose a player name:</h2>
     <input type="text" ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()">
     <hr>
@@ -25,5 +31,13 @@
     </table>
     <br>
     <hr>
-    <h2>Waiting for host to launch the game after all players have joined.</h2>
+    <div ng-show="jgc.iAmTheHost">
+        <h2>When you have named the game,</h2>
+        <h2>and all players have joined:</h2>
+        <button class="launch-game-button" ng-disabled="!jgc.gameName || (jgc.playerList.length < 3)" ng-click="jgc.onLaunchButton()">Launch The Game</button>
+    </div>
+    <div ng-show="!jgc.iAmTheHost">
+        <h2>Waiting for host to launch the game</h2>
+        <h2>after all players have joined.</h2>
+    </div>
 </div>

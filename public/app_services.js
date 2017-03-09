@@ -145,6 +145,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             self.checkCallback('GameName', data);
         });
 
+        this.socket.on('Launched', function(data) {
+            $log.log('on.Launched');
+            self.checkCallback('Launched', data);
+        });
+
         this.socket.on('JoinFailed', function(data) {
             $log.log('on.JoinFailed');
             self.checkCallback('JoinFailed', data);

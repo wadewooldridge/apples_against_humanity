@@ -218,12 +218,13 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
 }]);
 
 // Controller for Play Game page.
-app.controller('playGameController', ['$interval', '$location', '$log', '$scope', 'GameService', function($interval, $location, $log, $scope, GameService){
+app.controller('playGameController', ['$interval', '$location', '$log', '$sce', '$scope', 'GameService', function($interval, $location, $log, $sce, $scope, GameService){
     $log.log('playGameController');
     var self = this;
 
     // This controller's copy of the current game.
     this.currentGame = GameService.getCurrentGame();
+    this.gameTypeClass = (this.currentGame.gameTypeApples ? 'a2a' : 'cah');
 
     // PlayerList received from the server.
     this.playerList = [];
@@ -244,7 +245,10 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$scope'
             $log.log('cb.AnswerCards: ', data);
             // Add each of the new cards to the hand.
             for (let i = 0; i < data.answerCards.length; i++) {
-                self.answerCardList.push(data.answerCards[i]);
+                const card = data.answerCards[i];
+                // Use trusted HTML to allow display of things such as &trade; in the card.
+                self.answerCardList.push({title: $sce.trustAsHtml(card.title),
+                                          text:  $sce.trustAsHtml(card.text)});
             }
             // Doesn't automatically update; do it manually.
             $scope.$apply();

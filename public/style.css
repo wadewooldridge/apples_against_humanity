@@ -194,16 +194,63 @@
     width: 100%;
     border: 1px solid purple;
 }
+
 #hand-div {
     width: 40%;
     float: left;
     border: 1px solid blue;
+    background-color: aliceblue;
+}
+
+.card {
+    width: 90%;
+    margin-left: 5%;
+    border: 1px solid black;
+    border-radius: 6px;
+}
+
+.question-card {
+
+}
+
+.question-card-front {
+
+}
+
+.question-card-back {
+
+}
+
+.answer-card {
+    margin-bottom: 0.4em;
+    background-color: white;
+}
+
+.answer-card-front {
+
+}
+
+.answer-card-title {
+    font-size: 125%;
+    font-weight: bolder;
+    margin: 0.1em 0;
+}
+
+.answer-card-text {
+    min-height: 2.2em;
+    margin: 0.2em 0.5em;
+    border-radius: 4px;
+}
+
+.answer-card-text.a2a {
+    background-color: red;
+    color: white;
 }
 
 #board-div {
     width: 60%;
     float: right;
-    border: 1px solid darkblue;
+    margin: 1px solid darkblue;
 }
 
 /* Styling for adapting to mobile displays. */
@@ -216,4 +263,9 @@
     #board-div {
         width: 100%;
     }
+
+    .answer-card.text {
+        min-height: inherit;
+    }
+
 }

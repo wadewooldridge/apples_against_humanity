@@ -22,8 +22,9 @@
     </div>
     <div id="hand-div">
         <h4>Hand:</h4>
-        <div class="answer-card-front" ng-repeat="card in pgc.answerCardList">
-            <p>{{card}}</p>
+        <div class="card answer-card answer-card-front" ng-repeat="card in pgc.answerCardList">
+            <p ng-bind-html="card.title" class="answer-card-title" ng-class="pgc.gameTypeClass"></p>
+            <p ng-bind-html="card.text" class="answer-card-text" ng-class="pgc.gameTypeClass"></p>
         </div>
     </div>
     <div id="board-div">

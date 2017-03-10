@@ -26,6 +26,7 @@ class Deck {
             return null;
         } else {
             var index = Math.floor(Math.random() * this.cardArray.length);
+            // splice returns the array spliced out; return the first element as the card spliced out.
             return this.cardArray.splice(index, 1)[0];
         }
     }
@@ -247,28 +248,37 @@ exports.getDebugDump = function() {
  */
 exports.loadMasterDecks = function(a2aJson, cahJson) {
     console.log('GameList.loadMasterDecks');
-    var i, card;
 
     // Load A2A decks: questions are green, answers are red.
-    for (i = 0; i < a2aJson.greenCards.length; i++) {
-        card = a2aJson.greenCards[i];
+    for (let i = 0; i < a2aJson.greenCards.length; i++) {
+        const card = a2aJson.greenCards[i];
         a2aQuestionDeckArray.push({text: card.text, pick: 1});
     }
 
-    for (i = 0; i < a2aJson.redCards.length; i++) {
-        card = a2aJson.redCards[i];
-        a2aAnswerDeckArray.push(card.text);
+    for (let i = 0; i < a2aJson.redCards.length; i++) {
+        const card = a2aJson.redCards[i];
+        const text = card.text;
+
+        // Split the A2A answer cards into a title and text fields based on the dash.
+        const dashIndex = text.indexOf('-');
+        if (dashIndex === -1) {
+            // Dash was not found; use the whole string as the text.
+            a2aAnswerDeckArray.push({title: '', text: text});
+        } else {
+            a2aAnswerDeckArray.push({title: text.substr(0, dashIndex).trim(),
+                                     text:  text.substr(dashIndex + 1).trim()})
+        }
     }
 
     // Load CAH decks: questions are black, answers are white.
-    for (i = 0; i < cahJson.blackCards.length; i++) {
-        card = cahJson.blackCards[i];
+    for (let i = 0; i < cahJson.blackCards.length; i++) {
+        const card = cahJson.blackCards[i];
         cahQuestionDeckArray.push(card);
     }
 
-    for (i = 0; i < cahJson.whiteCards.length; i++) {
-        card = cahJson.whiteCards[i];
-        cahAnswerDeckArray.push(card);
+    for (let i = 0; i < cahJson.whiteCards.length; i++) {
+        const card = cahJson.whiteCards[i];
+        cahAnswerDeckArray.push({title: '', text: card});
     }
 };
 

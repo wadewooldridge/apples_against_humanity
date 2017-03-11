@@ -14,7 +14,7 @@ var app = angular.module('aahClientApp');
 // Service for interfacing to the game server.
 app.service('GameService', ['$http', '$location', '$log', '$q', function($http, $location, $log, $q) {
     $log.log('GameService: factory');
-    var self = this;
+    const self = this;
 
     /**
      *  Current list of possible games.
@@ -53,7 +53,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.getGameTable = function() {
         $log.log('GameService.getGameTable');
-        var url = 'http://192.168.1.137:3000/games';
+        const url = 'http://192.168.1.137:3000/games';
 
         return $http({
             method: 'GET',
@@ -75,7 +75,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.startNewGame = function(gameTypeApples) {
         $log.log('GameService.startNewGame: ' + gameTypeApples);
-        var url = 'http://192.168.1.137:3000/new/' + (gameTypeApples ? 'a2a' : 'cah');
+        const url = 'http://192.168.1.137:3000/new/' + (gameTypeApples ? 'a2a' : 'cah');
         $log.log(url);
 
         return $http({
@@ -114,7 +114,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.checkCallback = function(message, data) {
         //$log.log('GameService.checkCallback: ' + message);
-        var cb = this.callbacks[message];
+        const cb = this.callbacks[message];
         if (cb) {
             cb(data);
         }
@@ -129,7 +129,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
         this.socket = io('http://192.168.1.137:3001');
 
         this.socket.on('connect', function () {
-            var socket = this;
+            const socket = this;
             $log.log('io.connect: ' + socket.id);
             self.send('JoinGame', {gameId: self.currentGame.gameId});
         });
@@ -174,11 +174,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             $log.log('on.PlayerList: ', data);
 
             // Fix up the PlayerList with a flag of whether each user is the current user.
-            var playerList = data.playerList;
+            const playerList = data.playerList;
             console.log('ID: ' + self.socket.id);
             console.dir(playerList);
-            for (var i = 0; i < playerList.length; i++) {
-                var player = playerList[i];
+            for (let i = 0; i < playerList.length; i++) {
+                const player = playerList[i];
                 player.self = (player.socketId === self.socket.id);
 
                 // Add a flag in the data of whether the current player is the host.

@@ -13,7 +13,7 @@ var app = angular.module('aahClientApp');
 // Controller for Choose Game page.
 app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameService', function($interval, $location, $log, GameService){
     $log.log('chooseGameController');
-    var self = this;
+    const self = this;
 
     // Default to no games found.
     this.gameTable = undefined;
@@ -84,7 +84,7 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
 app.controller('joinGameController', ['$interval', '$location', '$log', '$scope', '$window', 'GameService',
                             function($interval, $location, $log, $scope, $window, GameService){
     $log.log('joinGameController');
-    var self = this;
+    const self = this;
 
     // This controller's copy of the current game.
     this.currentGame = GameService.getCurrentGame();
@@ -220,7 +220,7 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
 // Controller for Play Game page.
 app.controller('playGameController', ['$interval', '$location', '$log', '$sce', '$scope', 'GameService', function($interval, $location, $log, $sce, $scope, GameService){
     $log.log('playGameController');
-    var self = this;
+    const self = this;
 
     // This controller's copy of the current game.
     this.currentGame = GameService.getCurrentGame();

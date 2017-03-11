@@ -8,38 +8,38 @@
 /**
  *  cache - Main cache object to store cached files.
  */
-var cache = {};
+const cache = {};
 
 /**
  *  Node / Express modules.
  */
-var express = require('express');
-var http = require('http');
-var routes = require('../routes');
+const express = require('express');
+const http = require('http');
+const routes = require('../routes');
 
-var fs = require('fs');
-var mime = require('mime');
-var path = require('path');
+const fs = require('fs');
+const mime = require('mime');
+const path = require('path');
 
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 /**
  *  Program-specific modules.
  */
-var gameList = require('./GameList');
-var a2aJson = require('./assets/apples_to_apples.json');
-var cahJson = require('./assets/cards_against_humanity.json');
+const gameList = require('./GameList');
+const a2aJson = require('./assets/apples_to_apples.json');
+const cahJson = require('./assets/cards_against_humanity.json');
 gameList.loadMasterDecks(a2aJson, cahJson);
 
 /**
  *  Create the main Express app.
  */
-var app = express();
-var server = http.createServer(app);
-var io = require('socket.io')(server);
+const app = express();
+const server = http.createServer(app);
+const io = require('socket.io')(server);
 gameList.setIo(io);
 
 // Set up view engine: only using Jade for the default error handler; the rest are static pages.
@@ -78,19 +78,19 @@ app.get('/games', function(request, response) {
 });
 
 app.get('/new/a2a', function(request, response) {
-    var gameId = gameList.createGame(true);
+    const gameId = gameList.createGame(true);
     response.setHeader('Content-Type', 'application/json');
     response.send(JSON.stringify(gameList.getGameByGameId(gameId)));
 });
 
 app.get('/new/cah', function(request, response) {
-    var gameId = gameList.createGame(false);
+    const gameId = gameList.createGame(false);
     response.setHeader('Content-Type', 'application/json');
     response.send(JSON.stringify(gameList.getGameByGameId(gameId)));
 });
 
 app.get('/debug', function(request, response) {
-    var debugDump = gameList.getDebugDump();
+    const debugDump = gameList.getDebugDump();
     response.setHeader('Content-Type', 'application/json');
     response.send(JSON.stringify(debugDump));
 });
@@ -124,7 +124,7 @@ console.log('socket.io listening on port 3001');
 
 // Drop through to catch 404 and forward to error handler.
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
+    const err = new Error('Not Found');
     err.status = 404;
     next(err);
 });

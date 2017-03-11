@@ -25,7 +25,7 @@ class Deck {
         if (this.cardArray.length === 0) {
             return null;
         } else {
-            var index = Math.floor(Math.random() * this.cardArray.length);
+            const index = Math.floor(Math.random() * this.cardArray.length);
             // splice returns the array spliced out; return the first element as the card spliced out.
             return this.cardArray.splice(index, 1)[0];
         }
@@ -124,9 +124,9 @@ function getNextGameId() {
  */
 function copyGame(game) {
     //console.log('copyGame: ', game);
-    var gameCopy = {};
+    const gameCopy = {};
 
-    for (var key in game) {
+    for (let key in game) {
         if (key === 'playerList') {
             gameCopy.playerList = copyPlayerList(game);
         } else {
@@ -141,9 +141,9 @@ function copyGame(game) {
  */
 function copyPlayer(player) {
     //console.log('copyPlayer: ', player);
-    var playerCopy = {};
+    const playerCopy = {};
 
-    for (var key in player) {
+    for (let key in player) {
         if (key !== 'socket') {
             playerCopy[key] = player[key];
         }
@@ -158,10 +158,10 @@ function copyPlayer(player) {
  */
 function copyPlayerList(game) {
     //console.log('copyPlayerList: ', game);
-    var playerList = game.playerList;
-    var playerListCopy = [];
+    const playerList = game.playerList;
+    const playerListCopy = [];
 
-    for (var i = 0; i < playerList.length; i++) {
+    for (let i = 0; i < playerList.length; i++) {
         playerListCopy.push(copyPlayer(game.playerList[i]));
     }
     return playerListCopy;
@@ -171,7 +171,7 @@ function copyPlayerList(game) {
  *  Create a game.
  */
 exports.createGame = createGame = function(gameTypeApples) {
-    var gameId = getNextGameId();
+    const gameId = getNextGameId();
     gameTable[gameId] = new Game(gameId, gameTypeApples);
     return gameId;
 };
@@ -180,7 +180,7 @@ exports.createGame = createGame = function(gameTypeApples) {
  *  Create a Player object for the socket.
  */
 exports.createPlayer = createPlayer = function(socket) {
-    var player = new Player(socket);
+    const player = new Player(socket);
     playerTable[socket.id] = player;
     return player;
 };
@@ -190,9 +190,9 @@ exports.createPlayer = createPlayer = function(socket) {
  */
 exports.getAllGames = getAllGames = function() {
     console.log('GameList.getAllGames');
-    var retObj = {};
-    for (var key in gameTable) {
-        var game = gameTable[key];
+    const retObj = {};
+    for (let key in gameTable) {
+        const game = gameTable[key];
         retObj[key] = copyGame(game);
     }
     return retObj;
@@ -202,9 +202,9 @@ exports.getAllGames = getAllGames = function() {
  *  Get games by gameType.
  */
 exports.getGamesByGameType = getGamesByGameType = function(gameTypeApples) {
-    var retObj = {};
-    for (var key in gameTable) {
-        var game = gameTable[key];
+    const retObj = {};
+    for (let key in gameTable) {
+        const game = gameTable[key];
         if (game.gameTypeApples === gameTypeApples) {
             retObj[key] = copyGame(game);
         }
@@ -224,14 +224,14 @@ exports.getGameByGameId = getGameByGameId = function(gameId) {
  */
 exports.getDebugDump = function() {
     // Build sanitized version of gameTable.
-    var gameTableCopy = {};
-    for (var key in gameTable) {
+    const gameTableCopy = {};
+    for (let key in gameTable) {
         gameTableCopy[key] = copyGame(gameTable[key]);
     }
 
     // Build sanititized version of playerTable.
-    var playerTableCopy = {};
-    for (key in playerTable) {
+    const playerTableCopy = {};
+    for (let key in playerTable) {
         playerTableCopy[key] = copyPlayer(playerTable[key]);
     }
 
@@ -291,15 +291,15 @@ exports.setEventHandlers = function(socket) {
     // Handle disconnect.
     socket.on('disconnect', function() {
         console.log('on.disconnect: ' + socket.id);
-        var player = playerTable[socket.id];
+        const player = playerTable[socket.id];
 
         // If joined in a game, remove from the game.
-        var gameId = player.gameId;
+        const gameId = player.gameId;
         if (gameId) {
-            var game = gameTable[gameId];
-            for (var i = 0; i < game.playerList.length; i++) {
+            const game = gameTable[gameId];
+            for (let i = 0; i < game.playerList.length; i++) {
                 if (game.playerList[i].socketId === socket.id) {
-                    var deletedHost = game.playerList[i].host;
+                    const deletedHost = game.playerList[i].host;
                     console.log('on.disconnect: ' + gameId + ' - ' + socket.id);
                     game.playerList.splice(i, 1);
 
@@ -325,10 +325,10 @@ exports.setEventHandlers = function(socket) {
 
     // Event emitter handlers for the game.
     socket.on('GameName', function(data) {
-        var gameId = data.gameId;
-        var gameName = data.gameName;
+        const gameId = data.gameId;
+        const gameName = data.gameName;
         console.log('GameList.setGameName: ' + gameId + ' = ' + gameName);
-        var game = gameTable[gameId];
+        const game = gameTable[gameId];
         game.gameName = gameName;
 
         // Notify all players of the updated game name.
@@ -336,10 +336,10 @@ exports.setEventHandlers = function(socket) {
     });
 
     socket.on('JoinGame', function(data) {
-        var gameId = data.gameId;
+        const gameId = data.gameId;
         console.log('on.JoinGame: ' + gameId + ' + ' + socket.id);
-        var player = playerTable[socket.id];
-        var game = getGameByGameId(gameId);
+        const player = playerTable[socket.id];
+        const game = getGameByGameId(gameId);
         if (game) {
             game.playerList.push(player);
             player.gameId = gameId;
@@ -367,8 +367,8 @@ exports.setEventHandlers = function(socket) {
     });
 
     socket.on('Launch', function(data) {
-        var player = playerTable[socket.id];
-        var game = gameTable[player.gameId];
+        const player = playerTable[socket.id];
+        const game = gameTable[player.gameId];
         console.log('on.Launch: ' + player.gameId);
 
         // Load the card decks for the game. Make a copy of the master decks.
@@ -385,14 +385,14 @@ exports.setEventHandlers = function(socket) {
     });
 
     socket.on('NeedAnswerCards', function(data) {
-        var player = playerTable[socket.id];
-        var game = gameTable[player.gameId];
+        const player = playerTable[socket.id];
+        const game = gameTable[player.gameId];
         console.log('on.NeedAnswerCards: ' + socket.id + ' has ' + data.holding);
 
         // Send back answer cards to fill out the player's hand. Default to ten cards.
-        var answerCards = [];
-        for (var i = data.holding; i < 10; i++) {
-            var card = game.answerDeck.getRandomCard();
+        const answerCards = [];
+        for (let i = data.holding; i < 10; i++) {
+            const card = game.answerDeck.getRandomCard();
 
             // Check whether we have run out of cards; should never really happen.
             if (card === null) {
@@ -412,13 +412,13 @@ exports.setEventHandlers = function(socket) {
         console.log('on.PlayerName: ' + socket.id + ' = ' + data.playerName);
 
         // Update the playerName in the Player object.
-        var player = playerTable[socket.id];
+        const player = playerTable[socket.id];
         player.playerName = data.playerName;
 
         // If the player is in a game, notify the other game members of the new name.
-        var gameId = player.gameId;
+        const gameId = player.gameId;
         if (gameId) {
-            var game = getGameByGameId(gameId);
+            const game = getGameByGameId(gameId);
 
             // Notify all players of the updated Player list.
             io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
@@ -426,8 +426,8 @@ exports.setEventHandlers = function(socket) {
     });
 
     socket.on('ReadyToStart', function(data) {
-        var player = playerTable[socket.id];
-        var game = gameTable[player.gameId];
+        const player = playerTable[socket.id];
+        const game = gameTable[player.gameId];
         console.log('on.ReadyToStart: ' + socket.id);
         player.ready = true;
 
@@ -435,9 +435,9 @@ exports.setEventHandlers = function(socket) {
         socket.emit('PlayerList', {playerList: copyPlayerList(game)});
 
         // Keep track of when everyone is ready, to start the next round.
-        var readyCount = 0;
-        var playerCount = game.playerList.length;
-        for (var i = 0; i < playerCount; i++) {
+        let readyCount = 0;
+        const playerCount = game.playerList.length;
+        for (let i = 0; i < playerCount; i++) {
             if (game.playerList[i].ready)
                 readyCount++;
         }

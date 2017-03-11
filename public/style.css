@@ -250,7 +250,7 @@
 #board-div {
     width: 60%;
     float: right;
-    margin: 1px solid darkblue;
+    border: 1px solid darkblue;
 }
 
 /* Styling for adapting to mobile displays. */

@@ -229,36 +229,103 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // PlayerList received from the server.
     this.playerList = [];
 
-    // Game status summary from the server.
+    // Which player is up, and is it me?
+    this.upPlayerName = undefined;
+    this.upPlayerIsMe = undefined;
+
+    // Game status summary from the server, and list of status as history.
     this.gameStatus = '';
+    this.historyList = [];
 
     // Current player's hand: the answer cards that we hold.
-    this.answerCardList = [];
+    this.handCardList = [];
+    this.handCardsSelected = 0;
 
     // Current question card.
     this.questionCard = undefined;
 
+    // Guesses, and flag for when they are revealed.
+    this.guessCount = 0;
+    this.guesses = [];
+    this.guessesRevealed = false;
+
+    // Select a card in the hand when it is clicked.
+    this.onHandCardClick = function(index) {
+        $log.log('onHandCardClick: ' + index);
+    };
+
+    // Play the selected cards from the hand.
+    this.onPlayButton = function() {
+        $log.log('onPlayButton');
+    };
+
+    // Reset the selected cards from the hand.
+    this.onResetButton = function() {
+        $log.log('onResetButton');
+    };
+
     // Code that gets executed on controller initialization.
     $log.log('pgc:init');
     GameService.registerCallbacks({
-        AnswerCards: function(data) {
-            $log.log('cb.AnswerCards: ', data);
+        // GameStatus: received throughout; update the current gameStatus and the historyList.
+        GameStatus: function(data) {
+            $log.log('cb.GameStatus: ', data);
+            self.gameStatus = data.gameStatus;
+            self.historyList.push(data.gameStatus);
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
+
+        // HandCards: received when the game server fills out our hand.
+        HandCards: function(data) {
+            $log.log('cb.HandCards: ', data);
             // Add each of the new cards to the hand.
-            for (let i = 0; i < data.answerCards.length; i++) {
-                const card = data.answerCards[i];
+            for (let i = 0; i < data.handCards.length; i++) {
+                const card = data.handCards[i];
                 // Use trusted HTML to allow display of things such as &trade; in the card.
-                self.answerCardList.push({title: $sce.trustAsHtml(card.title),
-                                          text:  $sce.trustAsHtml(card.text)});
+                self.handCardList.push({title: $sce.trustAsHtml(card.title),
+                                        text:  $sce.trustAsHtml(card.text),
+                                        ordinal: 0});
             }
             // Doesn't automatically update; do it manually.
             $scope.$apply();
         },
-        GameStatus: function(data) {
-            $log.log('cb.GameStatus: ', data);
-            self.gameStatus = data.gameStatus;
+
+        // NewTurn: received to start a new turn with a new player and question card.
+        NewTurn: function(data) {
+            $log.log('cb.NewTurn: ', data);
+
+            // Reset turn variables.
+            self.handCardsSelected = 0;
+            self.guessCount = 0;
+            self.guesses = [];
+            self.guessesRevealed = false;
+
+            // Get the data for the turn from the server.
+            self.upPlayerName = data.player.playerName;
+            self.questionCard = {title: $sce.trustAsHtml(data.questionCard.title),
+                                 text:  $sce.trustAsHtml(data.questionCard.text)};
+
+            // Set a flag to tell whether the 'up' player is me.
+            for (let i = 0; i < self.playerList.length; i++){
+                let player = self.playerList[i];
+                if (player.playerName = data.player.playerName){
+                    self.upPlayerIsMe = player.self;
+                    break;
+                }
+            }
+
+            // If current player is not up, make sure to fill out the hand.
+            if (!self.upPlayerIsMe) {
+                // Fill our hand with answer cards.
+                GameService.send('NeedHandCards', {holding: self.handCardList.length})
+            }
+
             // Doesn't automatically update; do it manually.
             $scope.$apply();
         },
+
+        // PlayerList: received whenever the player list changes, to keep our list current.
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
@@ -270,6 +337,6 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // Tell the game server that we are ready to start.
     GameService.send('ReadyToStart', {});
     // Fill our hand with answer cards.
-    GameService.send('NeedAnswerCards', {holding: this.answerCardList.length})
+    GameService.send('NeedHandCards', {holding: this.handCardList.length})
 
 }]);

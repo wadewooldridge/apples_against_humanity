@@ -77,8 +77,9 @@ class Game {
         this.questionDeck = undefined;
         this.answerDeck = undefined;
 
-        // So far, no players.
+        // List of players.
         this.playerList = [];
+        this.upPlayerIndex = undefined;
     }
 }
 
@@ -252,7 +253,18 @@ exports.loadMasterDecks = function(a2aJson, cahJson) {
     // Load A2A decks: questions are green, answers are red.
     for (let i = 0; i < a2aJson.greenCards.length; i++) {
         const card = a2aJson.greenCards[i];
-        a2aQuestionDeckArray.push({text: card.text, pick: 1});
+        const text = card.text;
+
+        // Split the A2A answer cards into a title and text fields based on the parentheses.
+        const parenIndex = text.indexOf('(');
+        if (parenIndex === -1) {
+            // Parenthesis was not found; use the whole string as the text.
+            a2aQuestionDeckArray.push({title: '', text: text, pick: 1});
+        } else {
+            a2aQuestionDeckArray.push({title: text.substr(0, parenIndex).trim(),
+                                       text:  text.substr(parenIndex).trim(),
+                                       pick: 1});
+        }
     }
 
     for (let i = 0; i < a2aJson.redCards.length; i++) {
@@ -384,13 +396,13 @@ exports.setEventHandlers = function(socket) {
         io.to(game.roomId).emit('Launched', {});
     });
 
-    socket.on('NeedAnswerCards', function(data) {
+    socket.on('NeedHandCards', function(data) {
         const player = playerTable[socket.id];
         const game = gameTable[player.gameId];
-        console.log('on.NeedAnswerCards: ' + socket.id + ' has ' + data.holding);
+        console.log('on.NeedHandCards: ' + socket.id + ' has ' + data.holding);
 
         // Send back answer cards to fill out the player's hand. Default to ten cards.
-        const answerCards = [];
+        const handCards = [];
         for (let i = data.holding; i < 10; i++) {
             const card = game.answerDeck.getRandomCard();
 
@@ -399,13 +411,13 @@ exports.setEventHandlers = function(socket) {
                 io.to(game.roomId).emit('GameStatus', {gameStatus: 'Game has run out of answer cards.'});
                 break;
             } else {
-                console.log('on.NeedAnswerCards: ' + card);
-                answerCards.push(card);
+                console.log('on.NeedHandCards: ' + card);
+                handCards.push(card);
             }
         }
 
         // Send the array of new answer cards back to the user.
-        socket.emit('AnswerCards', {answerCards: answerCards});
+        socket.emit('HandCards', {handCards: handCards});
     });
 
     socket.on('PlayerName', function(data) {
@@ -445,6 +457,27 @@ exports.setEventHandlers = function(socket) {
         if (readyCount === playerCount) {
             // Everyone is ready, start the next round.
             io.to(game.roomId).emit('GameStatus', {gameStatus: 'Everyone is ready.'});
+
+            // Set up for the first turn. Choose the first/next player that is up.
+            if (game.upPlayerIndex === undefined) {
+                game.upPlayerIndex = Math.floor(Math.random() * game.playerList.length);
+            } else {
+                game.upPlayerIndex++;
+                if (game.upPlayerIndex >= game.playerList.length)
+                    game.upPlayerIndex = 0;
+            }
+            console.log('upPlayerIndex: ' + game.upPlayerIndex);
+
+            // Pick a random question card.
+            let questionCard = game.questionDeck.getRandomCard();
+
+            // Send notification of new turn.
+            io.to(game.roomId).emit('NewTurn', {
+                player: copyPlayer(game.playerList[game.upPlayerIndex]),
+                questionCard: questionCard
+            });
+            io.to(game.roomId).emit('GameStatus',
+                {gameStatus: 'New turn: ' + game.playerList[game.upPlayerIndex].playerName + ' is up; everyone else make a play.'});
         } else {
             // Not everyone is ready yet.
             io.to(game.roomId).emit('GameStatus',

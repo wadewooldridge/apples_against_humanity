@@ -179,6 +179,7 @@
 .player-div {
     width: 100%;
     border: 1px solid darkgreen;
+    background-color: palegreen;
 }
 
 .player-div p {
@@ -202,23 +203,65 @@
     background-color: aliceblue;
 }
 
+#hand-div .ordinal {
+    width: 10%;
+    border-radius: 100%;
+    color: white;
+    background-color: deeppink;
+}
+
 .card {
-    width: 90%;
+    width: 80%;
     margin-left: 5%;
     border: 1px solid black;
     border-radius: 6px;
 }
 
 .question-card {
-
+    width: 80%;
+    margin-left: 10%;
 }
 
 .question-card-front {
 
 }
 
-.question-card-back {
+.question-card-front.a2a {
 
+}
+
+.question-card-front.cah {
+    background-color: black;
+}
+
+.question-card-title {
+    font-size: 125%;
+    font-weight: bolder;
+    margin: 0.1em 0;
+}
+
+.question-card-text {
+    min-height: 2.2em;
+    margin: 0.2em 0.5em;
+    border-radius: 4px;
+}
+
+.question-card-text.a2a {
+    background-color: limegreen;
+    color: white;
+}
+
+.question-card-text.cah {
+    background-color: black;
+    color: white;
+}
+
+.question-card-back.a2a {
+    background-image: url('images/a2a_green_back.jpg');
+}
+
+.question-card-back.cah {
+    background-image: url('images/cah_black_back.png');
 }
 
 .answer-card {
@@ -247,10 +290,32 @@
     color: white;
 }
 
+.answer-card-back.a2a {
+    background-image: url('images/a2a_red_back.jpg');
+}
+
+.answer-card-back.cah {
+    background-image: url('images/cah_white_back.png');
+}
+
 #board-div {
     width: 60%;
     float: right;
     border: 1px solid darkblue;
+}
+
+#history-div {
+    width: 60%;
+    height: 100px;
+    bottom: 0;
+    float: right;
+    border: 1px solid darkgoldenrod;
+    background-color: palegoldenrod;
+    overflow: scroll;
+}
+
+#history-div p {
+    margin: 0;
 }
 
 /* Styling for adapting to mobile displays. */

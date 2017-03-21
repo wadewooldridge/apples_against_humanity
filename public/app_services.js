@@ -140,9 +140,9 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
 
         // These various handlers received messages from the server, update the
         // service's copy of any data, and call back to the controller as registered.
-        this.socket.on('AnswerCards', function(data) {
-            $log.log('on.AnswerCards');
-            self.checkCallback('AnswerCards', data);
+        this.socket.on('HandCards', function(data) {
+            $log.log('on.HandCards');
+            self.checkCallback('HandCards', data);
         });
 
         this.socket.on('GameName', function(data) {
@@ -168,6 +168,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
         this.socket.on('JoinSucceeded', function(data) {
             $log.log('on.JoinSucceeded');
             self.checkCallback('JoinSucceeded', data);
+        });
+
+        this.socket.on('NewTurn', function(data) {
+            $log.log('on.NewTurn');
+            self.checkCallback('NewTurn', data);
         });
 
         this.socket.on('PlayerList', function(data) {

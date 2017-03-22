@@ -182,17 +182,29 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             const playerList = data.playerList;
             console.log('ID: ' + self.socket.id);
             console.dir(playerList);
+
             for (let i = 0; i < playerList.length; i++) {
                 const player = playerList[i];
-                player.self = (player.socketId === self.socket.id);
+                player.me = (player.socketId === self.socket.id);
 
                 // Add a flag in the data of whether the current player is the host.
-                if (player.self) {
+                if (player.me) {
                     data.iAmTheHost = player.host;
                 }
             }
             self.checkCallback('PlayerList', data);
         });
+
+        this.socket.on('SolutionCount', function(data) {
+            $log.log('on.SolutionCount');
+            self.checkCallback('SolutionCount', data);
+        });
+
+        this.socket.on('SolutionList', function(data) {
+            $log.log('on.SolutionList');
+            self.checkCallback('SolutionList', data);
+        });
+
     };
 
     /**

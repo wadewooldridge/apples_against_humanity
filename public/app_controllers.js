@@ -229,9 +229,9 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // PlayerList received from the server.
     this.playerList = [];
 
-    // Which player is up, and is it me?
-    this.upPlayerName = undefined;
-    this.upPlayerIsMe = undefined;
+    // Which player is the judge, and is it me?
+    this.judgePlayerName = undefined;
+    this.judgePlayerIsMe = undefined;
 
     // Game status summary from the server, and list of status as history.
     this.gameStatus = '';
@@ -244,24 +244,82 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // Current question card.
     this.questionCard = undefined;
 
-    // Guesses, and flag for when they are revealed.
-    this.guessCount = 0;
-    this.guesses = [];
-    this.guessesRevealed = false;
+    // Solutions, and flag for when they are revealed.
+    // Server just gives a count until the solutions are finally revealed.
+    this.solutionCount = 0;
+    this.solutionList = [];
+    this.solutionsRevealed = false;
 
     // Select a card in the hand when it is clicked.
     this.onHandCardClick = function(index) {
-        $log.log('onHandCardClick: ' + index);
+        $log.log('onHandCardClick: index ' + index + ', selected: ' + self.handCardsSelected);
+        const questionCard = self.questionCard;
+        const clickedCard = self.handCardList[index];
+
+        if (questionCard === undefined) {
+            // Reject click if no questionCard.
+            $log.log('onHandCardClick: no questionCard');
+            return;
+        } else if (self.judgePlayerIsMe) {
+            // Reject click if this player is the judge.
+        } else if (clickedCard.ordinal !== 0 &&
+                clickedCard.ordinal === self.handCardsSelected) {
+            // Click on last/only card clicked; undo the selection;
+            $log.log('onHandCardClick: undo');
+            clickedCard.ordinal = 0;
+            self.handCardsSelected--;
+        } else if (self.handCardsSelected >= self.questionCard.pick) {
+            // Reject click if max answers already selected.
+            $log.log('onHandCardClick: max');
+            return;
+        } else {
+            // Mark this card as selected, and update the count.
+            $log.log('onHandCardClick: select');
+            clickedCard.ordinal = ++self.handCardsSelected;
+        }
     };
 
     // Play the selected cards from the hand.
     this.onPlayButton = function() {
         $log.log('onPlayButton');
+        const questionCard = self.questionCard;
+
+        if (questionCard === undefined) {
+            // Reject click if no questionCard.
+            $log.log('onPlayButton: no questionCard');
+            return;
+        } else if (self.judgePlayerIsMe) {
+            // Reject click if this player is the judge.
+            $log.log('onPlayButton: judge is me');
+            return;
+        } else if (self.handCardsSelected !== self.questionCard.pick) {
+            // Reject click if not enough cards selected.
+            $log.log('onPlayButton: pick more');
+            return;
+        }
+
+        // Loop through the cards once to build the solution list from the selected cards.
+        // Go backwards, so we can remove the played cards from the hand without screwing up the loop.
+        let solution = [];
+        for (let i = self.handCardList.length - 1; i >= 0; i--) {
+            card = self.handCardList[i];
+            if (card.ordinal) {
+                solution[card.ordinal - 1] = card;
+                self.handCardList.splice(i, 1);
+            }
+        }
+
+        // Send the solution to the server.
+        GameService.send('Solution', {solution: solution});
     };
 
     // Reset the selected cards from the hand.
     this.onResetButton = function() {
         $log.log('onResetButton');
+        for (let i = 0; i < self.handCardList.length; i++) {
+            self.handCardList[i].ordinal = 0;
+        }
+        self.handCardsSelected = 0;
     };
 
     // Code that gets executed on controller initialization.
@@ -274,6 +332,9 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             self.historyList.push(data.gameStatus);
             // Doesn't automatically update; do it manually.
             $scope.$apply();
+            // Manuall scroll to the bottom of the history.
+            let selector = $('#history-scroll');
+            $(selector).animate({ scrollTop: $(selector).prop('scrollHeight')}, 1000);
         },
 
         // HandCards: received when the game server fills out our hand.
@@ -297,28 +358,35 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
 
             // Reset turn variables.
             self.handCardsSelected = 0;
-            self.guessCount = 0;
-            self.guesses = [];
-            self.guessesRevealed = false;
+            self.solutionCount = 0;
+            self.solutionList = [];
+            self.solutionsRevealed = false;
 
             // Get the data for the turn from the server.
-            self.upPlayerName = data.player.playerName;
+            self.judgePlayerName = data.player.playerName;
             self.questionCard = {title: $sce.trustAsHtml(data.questionCard.title),
-                                 text:  $sce.trustAsHtml(data.questionCard.text)};
+                                 text:  $sce.trustAsHtml(data.questionCard.text),
+                                 pick: data.questionCard.pick};
 
-            // Set a flag to tell whether the 'up' player is me.
+            // Set a flag to tell whether the judge player is me.
             for (let i = 0; i < self.playerList.length; i++){
                 let player = self.playerList[i];
-                if (player.playerName = data.player.playerName){
-                    self.upPlayerIsMe = player.self;
+                if (player.playerName === data.player.playerName){
+                    self.judgePlayerIsMe = player.me;
                     break;
                 }
             }
 
-            // If current player is not up, make sure to fill out the hand.
-            if (!self.upPlayerIsMe) {
+            // If current player is not judge, make sure to fill out the hand.
+            if (!self.judgePlayerIsMe) {
                 // Fill our hand with answer cards.
                 GameService.send('NeedHandCards', {holding: self.handCardList.length})
+            }
+
+            // Reset the cards on the board so they show only outlines until somebody plays.
+            self.solutionList = [];
+            for (let i = 0; i < self.playerList.length - 1; i++) {
+                self.solutionList[i] = {};
             }
 
             // Doesn't automatically update; do it manually.
@@ -331,12 +399,26 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             self.playerList = data.playerList;
             // Doesn't automatically update; do it manually.
             $scope.$apply();
+        },
+
+        // SolutionCount: received when a player plays a solution, but the server is still waiting for more.
+        SolutionCount: function(data) {
+            $log.log('cb.SolutionCount: ', data);
+            self.solutionCount = data.solutionCount;
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
+
+        // SolutionList: received when all players have played a solution, and they can be revealed.
+        SolutionList: function(data) {
+            $log.log('cb.SolutionList: ', data);
+            self.solutionList = data.solutionList;
+            self.solutionsRevealed = true;
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
         }
     });
 
     // Tell the game server that we are ready to start.
     GameService.send('ReadyToStart', {});
-    // Fill our hand with answer cards.
-    GameService.send('NeedHandCards', {holding: this.handCardList.length})
-
 }]);

@@ -179,14 +179,14 @@
 .player-div {
     width: 100%;
     border: 1px solid darkgreen;
-    background-color: palegreen;
+    background-color: #f0fff0;
 }
 
 .player-div p {
     margin: 0.25em 0;
 }
 
-.player-up {
+.player-judge {
     font-weight: bold;
     color: darkred;
 }
@@ -204,14 +204,27 @@
 }
 
 #hand-div .ordinal {
-    width: 10%;
+    display: inline-block;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.75em 1em;
     border-radius: 100%;
     color: white;
     background-color: deeppink;
 }
 
+#reset-button {
+    margin: 0.5em 1em;
+}
+
+#play-button {
+    margin: 0.5em 1em;
+}
+
 .card {
     width: 80%;
+    min-height: 4em;
     margin-left: 5%;
     border: 1px solid black;
     border-radius: 6px;
@@ -270,7 +283,7 @@
 }
 
 .answer-card-front {
-
+    display: inline-block;
 }
 
 .answer-card-title {
@@ -306,15 +319,19 @@
 
 #history-div {
     width: 60%;
-    height: 100px;
     bottom: 0;
     float: right;
     border: 1px solid darkgoldenrod;
     background-color: palegoldenrod;
-    overflow: scroll;
 }
 
-#history-div p {
+#history-scroll {
+    height: 100px;
+    overflow: scroll;
+    text-align: left;
+}
+
+#history-scroll p {
     margin: 0;
 }
 

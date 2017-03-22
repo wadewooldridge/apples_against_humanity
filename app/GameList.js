@@ -53,7 +53,8 @@ class Player {
         this.ready = false;
         // Game variables.
         this.score = 0;
-        this.up = false;
+        // This player is the judge of this hand.
+        this.judge = false;
     }
 
 }
@@ -79,7 +80,10 @@ class Game {
 
         // List of players.
         this.playerList = [];
-        this.upPlayerIndex = undefined;
+        this.judgePlayerIndex = undefined;
+
+        // Collected solutions for this hand.
+        this.solutionList = [];
     }
 }
 
@@ -336,6 +340,7 @@ exports.setEventHandlers = function(socket) {
     });
 
     // Event emitter handlers for the game.
+    // GameName: received from host when changing the game name during configuration.
     socket.on('GameName', function(data) {
         const gameId = data.gameId;
         const gameName = data.gameName;
@@ -347,6 +352,7 @@ exports.setEventHandlers = function(socket) {
         io.to(game.roomId).emit('GameName', {gameName: gameName});
     });
 
+    // JoinGame: received from any player to join an existing game.
     socket.on('JoinGame', function(data) {
         const gameId = data.gameId;
         console.log('on.JoinGame: ' + gameId + ' + ' + socket.id);
@@ -378,6 +384,7 @@ exports.setEventHandlers = function(socket) {
 
     });
 
+    // Launch: received from host when all players have joined.
     socket.on('Launch', function(data) {
         const player = playerTable[socket.id];
         const game = gameTable[player.gameId];
@@ -396,6 +403,7 @@ exports.setEventHandlers = function(socket) {
         io.to(game.roomId).emit('Launched', {});
     });
 
+    // NeedHandCards: received from any player at the start of a hand, to replenish played cards.
     socket.on('NeedHandCards', function(data) {
         const player = playerTable[socket.id];
         const game = gameTable[player.gameId];
@@ -420,6 +428,7 @@ exports.setEventHandlers = function(socket) {
         socket.emit('HandCards', {handCards: handCards});
     });
 
+    // PlayerName: received from any player while joining, to set that player's name.
     socket.on('PlayerName', function(data) {
         console.log('on.PlayerName: ' + socket.id + ' = ' + data.playerName);
 
@@ -437,6 +446,7 @@ exports.setEventHandlers = function(socket) {
         }
     });
 
+    // ReadyToStart: received from all players after Launch, to know when to start the first hand.
     socket.on('ReadyToStart', function(data) {
         const player = playerTable[socket.id];
         const game = gameTable[player.gameId];
@@ -444,7 +454,7 @@ exports.setEventHandlers = function(socket) {
         player.ready = true;
 
         // Make sure this player has an up-to-date copy of the playerList for the new controller.
-        socket.emit('PlayerList', {playerList: copyPlayerList(game)});
+        io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
 
         // Keep track of when everyone is ready, to start the next round.
         let readyCount = 0;
@@ -458,31 +468,60 @@ exports.setEventHandlers = function(socket) {
             // Everyone is ready, start the next round.
             io.to(game.roomId).emit('GameStatus', {gameStatus: 'Everyone is ready.'});
 
-            // Set up for the first turn. Choose the first/next player that is up.
-            if (game.upPlayerIndex === undefined) {
-                game.upPlayerIndex = Math.floor(Math.random() * game.playerList.length);
+            // Set up for the first turn. Choose the first/next player that is the judge.
+            if (game.judgePlayerIndex === undefined) {
+                game.judgePlayerIndex = Math.floor(Math.random() * game.playerList.length);
             } else {
-                game.upPlayerIndex++;
-                if (game.upPlayerIndex >= game.playerList.length)
-                    game.upPlayerIndex = 0;
+                game.judgePlayerIndex++;
+                if (game.judgePlayerIndex >= game.playerList.length)
+                    game.judgePlayerIndex = 0;
             }
-            console.log('upPlayerIndex: ' + game.upPlayerIndex);
+            console.log('judgePlayerIndex: ' + game.judgePlayerIndex);
+
+            // Reset the solutions for the new hand.
+            game.solutionList = [];
 
             // Pick a random question card.
             let questionCard = game.questionDeck.getRandomCard();
 
             // Send notification of new turn.
             io.to(game.roomId).emit('NewTurn', {
-                player: copyPlayer(game.playerList[game.upPlayerIndex]),
+                player: copyPlayer(game.playerList[game.judgePlayerIndex]),
                 questionCard: questionCard
             });
             io.to(game.roomId).emit('GameStatus',
-                {gameStatus: 'New turn: ' + game.playerList[game.upPlayerIndex].playerName + ' is up; everyone else make a play.'});
+                {gameStatus: 'New turn: ' + game.playerList[game.judgePlayerIndex].playerName + ' is the judge; everyone else make a play.'});
         } else {
             // Not everyone is ready yet.
             io.to(game.roomId).emit('GameStatus',
                 {gameStatus: 'Waiting for players to be ready (' + readyCount + '/' + playerCount + ').'});
         }
+    });
+
+    // Solution: received from each non-judge player during the hand, with their proposed solution.
+    socket.on('Solution', function(data) {
+        const player = playerTable[socket.id];
+        const game = gameTable[player.gameId];
+        console.log('on.Solution: ' + socket.id);
+
+        // Add a player reference to this solution, so we can know later who won.
+        data.solution.player = player;
+
+        // Add this to the list of solutions played.
+        game.solutionList.push(data.solution);
+
+        // If we still need more solutions, just send back SolutionCount, otherwise SolutionList.
+        if (game.solutionList.length < (game.playerList.length - 1)) {
+            io.to(game.roomId).emit('SolutionCount', {solutionCount: game.solutionList.length});
+            io.to(game.roomId).emit('GameStatus',
+                {gameStatus: game.playerList[game.judgePlayerIndex].playerName + ' is the judge; waiting for everyone to make a play (' +
+                    game.solutionList.length + '/' + (game.playerList.length - 1) + ').'});
+        } else {
+            io.to(game.roomId).emit('SolutionList', {solutionList: game.solutionList});
+            io.to(game.roomId).emit('GameStatus',
+                {gameStatus: game.playerList[game.judgePlayerIndex].playerName + ', choose the best solution.'});
+        }
+
     });
 
 };

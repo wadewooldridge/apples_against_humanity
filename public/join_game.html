@@ -3,16 +3,16 @@
     <img ng-show="jgc.currentGame.gameTypeApples" src="images/a2a_box.jpg">
     <img ng-show="!jgc.currentGame.gameTypeApples" src="images/cah_box.jpg">
     <hr>
-    <div ng-show="jgc.iAmTheHost">
+    <div ng-show="jgc.hostPlayerIndex === jgc.mePlayerIndex">
         <h2>Choose a name for this game:</h2>
-        <input type="text" ng-model="jgc.gameName" ng-change="jgc.onGameNameChange()">
+        <input type="text" placeholder="Enter game name" ng-model="jgc.gameName" ng-change="jgc.onGameNameChange()">
     </div>
-    <div ng-show="!jgc.iAmTheHost">
+    <div ng-show="jgc.hostPlayerIndex !== jgc.mePlayerIndex">
         <h2>The name for this game is:</h2>
         <h2>{{jgc.gameName}}</h2>
     </div>
     <h2>Choose a player name:</h2>
-    <input type="text" ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()">
+    <input type="text" placeholder="Enter unique player name" ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()">
     <hr>
     <h2>Players:</h2>
     <table>
@@ -25,18 +25,18 @@
         <tr ng-repeat="player in jgc.playerList">
             <td>{{player.socketId}}</td>
             <td>{{player.playerName}}</td>
-            <td><img src="images/blue_checkmark.png" ng-show="player.self"></td>
-            <td><img src="images/blue_checkmark.png" ng-show="player.host"></td>
+            <td><img src="images/blue_checkmark.png" ng-show="$index === jgc.mePlayerIndex"></td>
+            <td><img src="images/blue_checkmark.png" ng-show="$index === jgc.hostPlayerIndex"></td>
         </tr>
     </table>
     <br>
     <hr>
-    <div ng-show="jgc.iAmTheHost">
+    <div ng-show="jgc.hostPlayerIndex === jgc.mePlayerIndex">
         <h2>When you have named the game,</h2>
         <h2>and all players have joined:</h2>
         <button class="launch-game-button" ng-disabled="!jgc.gameName || (jgc.playerList.length < 3)" ng-click="jgc.onLaunchButton()">Launch The Game</button>
     </div>
-    <div ng-show="!jgc.iAmTheHost">
+    <div ng-show="jgc.hostPlayerIndex !== jgc.mePlayerIndex">
         <h2>Waiting for host to launch the game</h2>
         <h2>after all players have joined.</h2>
     </div>

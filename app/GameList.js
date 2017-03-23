@@ -44,17 +44,13 @@ class Player {
         console.log('Player.constructor: ' + socket.id);
         this.socket = socket;
         this.socketId = socket.id;
-        this.playerName = 'TBD';
+        this.playerName = '';
         // Which game has this player joined.
         this.gameId = undefined;
-        // Player is the host of this game.
-        this.host = false;
         // Player is ready to play.
         this.ready = false;
         // Game variables.
         this.score = 0;
-        // This player is the judge of this hand.
-        this.judge = false;
     }
 
 }
@@ -71,7 +67,7 @@ class Game {
         this.gameId = gameId;
         this.roomId = 'Room-' + gameId;
         this.gameTypeApples = gameTypeApples;
-        this.gameName = 'TBD';
+        this.gameName = '';
         this.launched = false;
 
         // Decks to be used for the game.
@@ -80,6 +76,7 @@ class Game {
 
         // List of players.
         this.playerList = [];
+        this.hostPlayerIndex = undefined;
         this.judgePlayerIndex = undefined;
 
         // Collected solutions for this hand.
@@ -315,7 +312,7 @@ exports.setEventHandlers = function(socket) {
             const game = gameTable[gameId];
             for (let i = 0; i < game.playerList.length; i++) {
                 if (game.playerList[i].socketId === socket.id) {
-                    const deletedHost = game.playerList[i].host;
+                    const deletedHost = (i === game.hostPlayerIndex);
                     console.log('on.disconnect: ' + gameId + ' - ' + socket.id);
                     game.playerList.splice(i, 1);
 
@@ -325,14 +322,18 @@ exports.setEventHandlers = function(socket) {
                         delete gameTable[gameId];
                     } else if (deletedHost) {
                         // Reassign host flag to the next user.
-                        game.playerList[0].host = true;
+                        game.hostPlayerIndex = 0;
                     }
                     break;
                 }
             }
 
             // Notify all players of the updated Player list.
-            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
+            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
+                                                   hostPlayerIndex: game.hostPlayerIndex,
+                                                   judgePlayerIndex: game.judgePlayerIndex});
+
+            // Todo: abort the current hand and start a new one.
         }
 
         // Remove from the playerTable.
@@ -363,7 +364,9 @@ exports.setEventHandlers = function(socket) {
             player.gameId = gameId;
 
             // If the first player in, call him the host.
-            player.host = (game.playerList.length === 1);
+            if (game.hostPlayerIndex === undefined) {
+                game.hostPlayerIndex = 0;
+            }
 
             // Use the gameId as the socket.io room identifier.
             socket.join(game.roomId);
@@ -375,7 +378,9 @@ exports.setEventHandlers = function(socket) {
             socket.emit('GameName', {gameName: game.gameName});
 
             // Notify all players of the updated Player list.
-            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
+            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
+                                                   hostPlayerIndex: game.hostPlayerIndex,
+                                                   judgePlayerIndex: game.judgePlayerIndex});
 
         } else {
             console.log('on.JoinGame failed to find gameId: ' + gameId);
@@ -442,7 +447,9 @@ exports.setEventHandlers = function(socket) {
             const game = getGameByGameId(gameId);
 
             // Notify all players of the updated Player list.
-            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
+            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
+                hostPlayerIndex: game.hostPlayerIndex,
+                judgePlayerIndex: game.judgePlayerIndex});
         }
     });
 
@@ -454,7 +461,10 @@ exports.setEventHandlers = function(socket) {
         player.ready = true;
 
         // Make sure this player has an up-to-date copy of the playerList for the new controller.
-        io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game)});
+        io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
+            hostPlayerIndex: game.hostPlayerIndex,
+            judgePlayerIndex: game.judgePlayerIndex});
+        console.log('ReadyToStart: ' + game.judgePlayerIndex);
 
         // Keep track of when everyone is ready, to start the next round.
         let readyCount = 0;
@@ -486,7 +496,7 @@ exports.setEventHandlers = function(socket) {
 
             // Send notification of new turn.
             io.to(game.roomId).emit('NewTurn', {
-                player: copyPlayer(game.playerList[game.judgePlayerIndex]),
+                judgePlayerIndex: game.judgePlayerIndex,
                 questionCard: questionCard
             });
             io.to(game.roomId).emit('GameStatus',

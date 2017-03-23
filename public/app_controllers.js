@@ -91,14 +91,14 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
 
     // Variables to model the game name and player (host) name.
     this.gameName = '';
-    this.playerName = 'TBD';
+    this.playerName = '';
 
     // Variable to model the PlayerList received from the server.
     this.playerList = [];
 
-    // Flag of whether the current user is the host of the game; this can change dynamically
-    // if the original host disconnects from the game, and allows an alternate to Launch the game.
-    this.iAmTheHost = false;
+    // Which player is the host, and which is me.
+    this.hostPlayerIndex = undefined;
+    this.mePlayerIndex = undefined;
 
     // Handler for Launch button.
     this.onLaunchButton = function() {
@@ -145,7 +145,8 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
-            self.iAmTheHost = data.iAmTheHost;
+            self.hostPlayerIndex = data.hostPlayerIndex;
+            self.mePlayerIndex = data.mePlayerIndex;
 
             // Doesn't automatically update; do it manually.
             $scope.$apply();
@@ -164,11 +165,15 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
     this.currentGame = GameService.getCurrentGame();
 
     // Variables to model the game name and player (host) name.
-    this.gameName = 'TBD';
-    this.playerName = 'TBD';
+    this.gameName = '';
+    this.playerName = '';
 
     // Variable to model the PlayerList received from the server.
     this.playerList = [];
+
+    // Which player is the host, and which is me.
+    this.hostPlayerIndex = undefined;
+    this.mePlayerIndex = undefined;
 
     // Handler for changing game name: notify the server.
     this.onGameNameChange = function() {
@@ -209,6 +214,8 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
+            self.hostPlayerIndex = data.hostPlayerIndex;
+            self.mePlayerIndex = data.mePlayerIndex;
 
             // Doesn't automatically update; do it manually.
             $scope.$apply();
@@ -229,9 +236,11 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // PlayerList received from the server.
     this.playerList = [];
 
-    // Which player is the judge, and is it me?
+    // Which player is the host, which is the judge, and which is me.
+    this.hostPlayerIndex = undefined;
+    this.judgePlayerIndex = undefined;
     this.judgePlayerName = undefined;
-    this.judgePlayerIsMe = undefined;
+    this.mePlayerIndex = undefined;
 
     // Game status summary from the server, and list of status as history.
     this.gameStatus = '';
@@ -260,7 +269,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             // Reject click if no questionCard.
             $log.log('onHandCardClick: no questionCard');
             return;
-        } else if (self.judgePlayerIsMe) {
+        } else if (self.judgePlayerIndex === self.mePlayerIndex) {
             // Reject click if this player is the judge.
         } else if (clickedCard.ordinal !== 0 &&
                 clickedCard.ordinal === self.handCardsSelected) {
@@ -288,7 +297,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             // Reject click if no questionCard.
             $log.log('onPlayButton: no questionCard');
             return;
-        } else if (self.judgePlayerIsMe) {
+        } else if (self.judgePlayerIndex === self.mePlayerIndex) {
             // Reject click if this player is the judge.
             $log.log('onPlayButton: judge is me');
             return;
@@ -344,8 +353,10 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             for (let i = 0; i < data.handCards.length; i++) {
                 const card = data.handCards[i];
                 // Use trusted HTML to allow display of things such as &trade; in the card.
-                self.handCardList.push({title: $sce.trustAsHtml(card.title),
-                                        text:  $sce.trustAsHtml(card.text),
+                self.handCardList.push({title: card.title,
+                                        text: card.text,
+                                        safeTitle: $sce.trustAsHtml(card.title),
+                                        safeText:  $sce.trustAsHtml(card.text),
                                         ordinal: 0});
             }
             // Doesn't automatically update; do it manually.
@@ -363,22 +374,19 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             self.solutionsRevealed = false;
 
             // Get the data for the turn from the server.
-            self.judgePlayerName = data.player.playerName;
-            self.questionCard = {title: $sce.trustAsHtml(data.questionCard.title),
-                                 text:  $sce.trustAsHtml(data.questionCard.text),
-                                 pick: data.questionCard.pick};
+            self.judgePlayerIndex = data.judgePlayerIndex;
+            if (self.judgePlayerIndex !== undefined)
+                self.judgePlayerName = self.playerList[self.judgePlayerIndex].playerName;
 
-            // Set a flag to tell whether the judge player is me.
-            for (let i = 0; i < self.playerList.length; i++){
-                let player = self.playerList[i];
-                if (player.playerName === data.player.playerName){
-                    self.judgePlayerIsMe = player.me;
-                    break;
-                }
-            }
+            const card = data.questionCard;
+            self.questionCard = {title: card.title,
+                                 text: card.text,
+                                 safeTitle: $sce.trustAsHtml(card.title),
+                                 safeText:  $sce.trustAsHtml(card.text),
+                                 pick: card.pick};
 
             // If current player is not judge, make sure to fill out the hand.
-            if (!self.judgePlayerIsMe) {
+            if (self.judgePlayerIndex != self.mePlayerIndex) {
                 // Fill our hand with answer cards.
                 GameService.send('NeedHandCards', {holding: self.handCardList.length})
             }
@@ -397,6 +405,12 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
         PlayerList: function(data) {
             $log.log('cb.PlayerList: ', data);
             self.playerList = data.playerList;
+            self.hostPlayerIndex = data.hostPlayerIndex;
+            self.judgePlayerIndex = data.judgePlayerIndex;
+            if (self.judgePlayerIndex !== undefined)
+                self.judgePlayerName = self.playerList[self.judgePlayerIndex].playerName;
+            self.mePlayerIndex = data.mePlayerIndex;
+
             // Doesn't automatically update; do it manually.
             $scope.$apply();
         },
@@ -413,6 +427,19 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
         SolutionList: function(data) {
             $log.log('cb.SolutionList: ', data);
             self.solutionList = data.solutionList;
+
+            // Fix up the solutions to be safe to display.
+            for (let solutionIndex = 0; solutionIndex < self.solutionList.length; solutionIndex++) {
+                let solution = self.solutionList[solutionIndex];
+
+                for (let cardIndex = 0; cardIndex < solution.length; cardIndex++) {
+                    let card = solution[cardIndex];
+                    card.safeTitle = $sce.trustAsHtml(card.title);
+                    card.safeText = $sce.trustAsHtml(card.text);
+                }
+            }
+
+            // Now flag that they can be revealed.
             self.solutionsRevealed = true;
             // Doesn't automatically update; do it manually.
             $scope.$apply();

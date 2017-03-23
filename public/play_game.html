@@ -1,6 +1,6 @@
 <div id="play-game-div">
     <h2 class="page-title">Play Game &mdash; Game ID {{pgc.currentGame.gameId}}</h2>
-    <div>
+    <div id="player-list-div">
         <h4>Players:</h4>
         <div id="players-div">
             <div class="player-div" ng-repeat="player in pgc.playerList">
@@ -32,10 +32,12 @@
             </div>
         </div>
         <button id="reset-button" class="btn btn-warning" ng-click="pgc.onResetButton()"
-                ng-disabled="pgc.judgePlayerIsMe || (pgc.handCardsSelected == 0)">Reset Selection
+                ng-disabled="pgc.playedThisHand || (pgc.judgePlayerIndex === pgc.mePlayerIndex) || (pgc.handCardsSelected === 0)">
+                Reset Selection
         </button>
         <button id="play-button" class="btn btn-primary" ng-click="pgc.onPlayButton()"
-                ng-disabled="pgc.judgePlayerIsMe || (pgc.handCardsSelected !== pgc.questionCard.pick)">Play Card(s)
+                ng-disabled="pgc.playedThisHand || (pgc.judgePlayerIndex === pgc.mePlayerIndex) || (pgc.handCardsSelected !== pgc.questionCard.pick)">
+                Play Card(s)
         </button>
     </div>
     <div id="board-div">
@@ -49,21 +51,27 @@
         </div>
         <hr>
         <p>Answer cards from the other players:</p>
-        <div class="solution" ng-repeat="solution in pgc.solutionList" ng-init="solIndex = $index">
-            <div class="card answer-card" ng-repeat="card in solution" ng-init="cardIndex = $index" ng-class="pgc.gameTypeClass">
-                <div ng-show="pgc.solutionsRevealed">
-                    <p ng-bind-html="card.safeTitle" class="answer-card-title" ng-class="pgc.gameTypeClass"></p>
-                    <p ng-bind-html="card.safeText" class="answer-card-text" ng-class="pgc.gameTypeClass"></p>
+        <div class="solution" ng-repeat="solution in pgc.solutionList" ng-init="solIndex = $index" ng-click="pgc.onSolutionClick($index)">
+            <div class="solution-cards">
+                <div class="card answer-card solution-card" ng-repeat="card in solution.cards" ng-init="cardIndex = $index" ng-class="pgc.gameTypeClass">
+                    <div ng-show="!pgc.solutionsRevealed && (solIndex < pgc.solutionCount)" class="card answer-card answer-card-back" ng-class="pgc.gameTypeClass">
+                    </div>
+                    <div ng-show="pgc.solutionsRevealed">
+                        <p ng-bind-html="card.safeTitle" class="answer-card-title" ng-class="pgc.gameTypeClass"></p>
+                        <p ng-bind-html="card.safeText" class="answer-card-text" ng-class="pgc.gameTypeClass"></p>
+                    </div>
                 </div>
-                <div ng-show="!pgc.solutionsRevealed && ($solIndex < pgc.solutionCount)" class="answer-card-back" ng-class="pgc.gameTypeClass">
-                </div>
+            </div>
+            <div class="solution-player" ng-show="pgc.winnerRevealed">
+                <p>{{pgc.playerList[solution.playerIndex].playerName}}</p>
+                <p class="solution-winner" ng-show="solIndex === pgc.winningSolutionIndex">Winner!</p>
             </div>
         </div>
     </div>
     <div id="history-div">
         <h4>History:</h4>
         <div id="history-scroll">
-            <p ng-repeat="history in pgc.historyList">{{history}}</p>
+            <p ng-repeat="history in pgc.historyList track by $index">{{history}}</p>
         </div>
     </div>
 </div>

@@ -28,6 +28,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.currentGame = undefined;
 
     /**
+     *  Current player list.
+     */
+    this.currentPlayerList = undefined;
+
+    /**
      *  Simpler getter methods.
      */
     this.getCurrentGameTable    = function() {return this.currentGameTable};
@@ -177,21 +182,19 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
 
         this.socket.on('PlayerList', function(data) {
             $log.log('on.PlayerList: ', data);
+            const playerList = data.playerList;
+            //console.log('ID: ' + self.socket.id);
+            //console.dir(playerList);
 
             // Fix up the PlayerList with a flag of whether each user is the current user.
-            const playerList = data.playerList;
-            console.log('ID: ' + self.socket.id);
-            console.dir(playerList);
-
             for (let i = 0; i < playerList.length; i++) {
                 const player = playerList[i];
-                player.me = (player.socketId === self.socket.id);
-
-                // Add a flag in the data of whether the current player is the host.
-                if (player.me) {
-                    data.iAmTheHost = player.host;
+                if (player.socketId === self.socket.id) {
+                    data.mePlayerIndex = i;
+                    break;
                 }
             }
+            self.currentPlayerList = playerList;
             self.checkCallback('PlayerList', data);
         });
 

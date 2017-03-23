@@ -249,6 +249,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // Current player's hand: the answer cards that we hold.
     this.handCardList = [];
     this.handCardsSelected = 0;
+    this.playedThisHand = false;
 
     // Current question card.
     this.questionCard = undefined;
@@ -258,6 +259,9 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     this.solutionCount = 0;
     this.solutionList = [];
     this.solutionsRevealed = false;
+    this.winnerRevealed = false;
+    this.winningSolutionIndex = undefined;
+    this.winningPlayerIndex = undefined;
 
     // Select a card in the hand when it is clicked.
     this.onHandCardClick = function(index) {
@@ -269,8 +273,14 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             // Reject click if no questionCard.
             $log.log('onHandCardClick: no questionCard');
             return;
+        } else if (self.playedThisHand) {
+            // Reject if already played this hand.
+            $log.log('onHandCardClick: already played');
+            return;
         } else if (self.judgePlayerIndex === self.mePlayerIndex) {
             // Reject click if this player is the judge.
+            $log.log('onHandCardClick: judge');
+            return;
         } else if (clickedCard.ordinal !== 0 &&
                 clickedCard.ordinal === self.handCardsSelected) {
             // Click on last/only card clicked; undo the selection;
@@ -281,11 +291,11 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             // Reject click if max answers already selected.
             $log.log('onHandCardClick: max');
             return;
-        } else {
-            // Mark this card as selected, and update the count.
-            $log.log('onHandCardClick: select');
-            clickedCard.ordinal = ++self.handCardsSelected;
         }
+
+        // All checks passed; mark this card as selected, and update the count.
+        $log.log('onHandCardClick: select');
+        clickedCard.ordinal = ++self.handCardsSelected;
     };
 
     // Play the selected cards from the hand.
@@ -297,6 +307,10 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             // Reject click if no questionCard.
             $log.log('onPlayButton: no questionCard');
             return;
+        } else if (self.playedThisHand) {
+            // Reject if already played this hand.
+            $log.log('onPlayButton: already played');
+            return;
         } else if (self.judgePlayerIndex === self.mePlayerIndex) {
             // Reject click if this player is the judge.
             $log.log('onPlayButton: judge is me');
@@ -307,28 +321,76 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             return;
         }
 
-        // Loop through the cards once to build the solution list from the selected cards.
+        // Loop through the cards once to build the solution from the selected cards.
         // Go backwards, so we can remove the played cards from the hand without screwing up the loop.
-        let solution = [];
+        let cards = [];
         for (let i = self.handCardList.length - 1; i >= 0; i--) {
-            card = self.handCardList[i];
+            let card = self.handCardList[i];
             if (card.ordinal) {
-                solution[card.ordinal - 1] = card;
+                cards[card.ordinal - 1] = card;
                 self.handCardList.splice(i, 1);
             }
         }
 
         // Send the solution to the server.
-        GameService.send('Solution', {solution: solution});
+        GameService.send('Solution', {solution: {playerIndex: self.mePlayerIndex, cards: cards}});
+        self.playedThisHand = true;
     };
 
     // Reset the selected cards from the hand.
     this.onResetButton = function() {
         $log.log('onResetButton');
+        const questionCard = self.questionCard;
+
+        if (questionCard === undefined) {
+            // Reject click if no questionCard.
+            $log.log('onResetButton: no questionCard');
+            return;
+        } else if (self.playedThisHand) {
+            // Reject if already played this hand.
+            $log.log('onResetButton: already played');
+            return;
+        } else if (self.judgePlayerIndex === self.mePlayerIndex) {
+            // Reject click if this player is the judge.
+            $log.log('onResetButton: judge is me');
+            return;
+        } else if (self.handCardsSelected === 0) {
+            // Reject click if nothing selected.
+            $log.log('onResetButton: none selected');
+            return;
+        }
+
+        // All checks passed; reset the selected cards in the hand.
         for (let i = 0; i < self.handCardList.length; i++) {
             self.handCardList[i].ordinal = 0;
         }
         self.handCardsSelected = 0;
+    };
+
+    // Allow the judge to click on the solution that wins this hand.
+    this.onSolutionClick = function(index) {
+        $log.log('onSolutionClick: ' + index);
+        const questionCard = self.questionCard;
+
+        if (questionCard === undefined) {
+            // Reject click if no questionCard.
+            $log.log('onSolutionClick: no questionCard');
+            return;
+        } else if (self.judgePlayerIndex !== self.mePlayerIndex) {
+            // Reject click if this player is not the judge.
+            $log.log('onSolutionClick: judge is not me');
+            return;
+        } else if (self.playedThisHand) {
+            // Reject click if already selected one.
+            $log.log('onSolutionClick: already played');
+            return;
+        }
+
+        // All checks passed; send the winner over to the server.
+        GameService.send('JudgeSolutions', {
+            winningSolutionIndex: index,
+            winningPlayerIndex: self.solutionList[index].playerIndex});
+        self.playedThisHand = true;
     };
 
     // Code that gets executed on controller initialization.
@@ -363,15 +425,37 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             $scope.$apply();
         },
 
-        // NewTurn: received to start a new turn with a new player and question card.
-        NewTurn: function(data) {
-            $log.log('cb.NewTurn: ', data);
+        // HandOver: received when the game server gets the final judging.
+        HandOver: function(data) {
+            $log.log('cb.HandOver: ', data);
+
+            // Save the winner information.
+            self.winningSolutionIndex = data.winningSolutionIndex;
+            self.winningPlayerIndex = data.winningPlayerIndex;
+
+            // Update the score of the winning player.
+            self.playerList[data.winningPlayerIndex].score++;
+
+            // Reveal the players that go with the solutions.
+            self.winnerRevealed = true;
+
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
+
+        // NewHand: received to start a new turn with a new player and question card.
+        NewHand: function(data) {
+            $log.log('cb.NewHand: ', data);
 
             // Reset turn variables.
             self.handCardsSelected = 0;
             self.solutionCount = 0;
             self.solutionList = [];
             self.solutionsRevealed = false;
+            self.playedThisHand = false;
+            self.winnerRevealed = false;
+            self.winningSolutionIndex = undefined;
+            self.winningPlayerIndex = undefined;
 
             // Get the data for the turn from the server.
             self.judgePlayerIndex = data.judgePlayerIndex;
@@ -394,7 +478,12 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             // Reset the cards on the board so they show only outlines until somebody plays.
             self.solutionList = [];
             for (let i = 0; i < self.playerList.length - 1; i++) {
-                self.solutionList[i] = {};
+                let blankSolution = {playerIndex: 0, cards: []};
+                for (let i = 0; i < self.questionCard.pick; i++) {
+                    blankSolution.cards.push({});
+                }
+
+                self.solutionList[i] = blankSolution;
             }
 
             // Doesn't automatically update; do it manually.
@@ -432,8 +521,8 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             for (let solutionIndex = 0; solutionIndex < self.solutionList.length; solutionIndex++) {
                 let solution = self.solutionList[solutionIndex];
 
-                for (let cardIndex = 0; cardIndex < solution.length; cardIndex++) {
-                    let card = solution[cardIndex];
+                for (let cardIndex = 0; cardIndex < solution.cards.length; cardIndex++) {
+                    let card = solution.cards[cardIndex];
                     card.safeTitle = $sce.trustAsHtml(card.title);
                     card.safeText = $sce.trustAsHtml(card.text);
                 }

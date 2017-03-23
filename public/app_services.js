@@ -160,6 +160,11 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             self.checkCallback('GameStatus', data);
         });
 
+        this.socket.on('HandOver', function(data) {
+            $log.log('on.HandOver');
+            self.checkCallback('HandOver', data);
+        });
+
         this.socket.on('Launched', function(data) {
             $log.log('on.Launched');
             self.checkCallback('Launched', data);
@@ -175,9 +180,9 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             self.checkCallback('JoinSucceeded', data);
         });
 
-        this.socket.on('NewTurn', function(data) {
-            $log.log('on.NewTurn');
-            self.checkCallback('NewTurn', data);
+        this.socket.on('NewHand', function(data) {
+            $log.log('on.NewHand');
+            self.checkCallback('NewHand', data);
         });
 
         this.socket.on('PlayerList', function(data) {

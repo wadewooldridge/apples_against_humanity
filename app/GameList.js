@@ -170,6 +170,37 @@ function copyPlayerList(game) {
 }
 
 /**
+ *  Start the next hand for a game.
+ */
+function startNextHand(game) {
+    console.log('startNextHand: ' + game.gameId);
+
+    // Choose the first/next player that is the judge.
+    if (game.judgePlayerIndex === undefined) {
+        game.judgePlayerIndex = Math.floor(Math.random() * game.playerList.length);
+    } else {
+        game.judgePlayerIndex++;
+        if (game.judgePlayerIndex >= game.playerList.length)
+            game.judgePlayerIndex = 0;
+    }
+    console.log('judgePlayerIndex: ' + game.judgePlayerIndex);
+
+    // Reset the solutions for the new hand.
+    game.solutionList = [];
+
+    // Pick a random question card.
+    let questionCard = game.questionDeck.getRandomCard();
+
+    // Send notification of new turn.
+    io.to(game.roomId).emit('NewHand', {
+        judgePlayerIndex: game.judgePlayerIndex,
+        questionCard: questionCard
+    });
+    io.to(game.roomId).emit('GameStatus',
+        {gameStatus: 'New turn: ' + game.playerList[game.judgePlayerIndex].playerName + ' is the judge; everyone else make a play.'});
+}
+
+/**
  *  Create a game.
  */
 exports.createGame = createGame = function(gameTypeApples) {
@@ -389,6 +420,30 @@ exports.setEventHandlers = function(socket) {
 
     });
 
+    // JudgeSolutions: received when the judge has picked the best solution offered.
+    socket.on('JudgeSolutions', function(data) {
+        const player = playerTable[socket.id];
+        const game = gameTable[player.gameId];
+        const winningSolutionIndex = data.winningSolutionIndex;
+        const winningPlayerIndex = data.winningPlayerIndex;
+        console.log('on.JudgeSolutions: ' + player.gameId + ' = solution ' + winningSolutionIndex + ', player ' + winningPlayerIndex);
+
+        // Update the score of the player selected.
+        game.playerList[winningPlayerIndex].score++;
+
+        // Send out a notification of the winner of the hand.
+        io.to(game.roomId).emit('HandOver', {
+            winningSolutionIndex: winningSolutionIndex,
+            winningPlayerIndex: winningPlayerIndex
+        });
+
+        // Set a timer to start the next hand.
+        setTimeout(function() {
+            console.log('Game ' + game.gameId + ' new hand timer');
+            startNextHand(game);
+        }, 5000);
+    });
+
     // Launch: received from host when all players have joined.
     socket.on('Launch', function(data) {
         const player = playerTable[socket.id];
@@ -477,30 +532,7 @@ exports.setEventHandlers = function(socket) {
         if (readyCount === playerCount) {
             // Everyone is ready, start the next round.
             io.to(game.roomId).emit('GameStatus', {gameStatus: 'Everyone is ready.'});
-
-            // Set up for the first turn. Choose the first/next player that is the judge.
-            if (game.judgePlayerIndex === undefined) {
-                game.judgePlayerIndex = Math.floor(Math.random() * game.playerList.length);
-            } else {
-                game.judgePlayerIndex++;
-                if (game.judgePlayerIndex >= game.playerList.length)
-                    game.judgePlayerIndex = 0;
-            }
-            console.log('judgePlayerIndex: ' + game.judgePlayerIndex);
-
-            // Reset the solutions for the new hand.
-            game.solutionList = [];
-
-            // Pick a random question card.
-            let questionCard = game.questionDeck.getRandomCard();
-
-            // Send notification of new turn.
-            io.to(game.roomId).emit('NewTurn', {
-                judgePlayerIndex: game.judgePlayerIndex,
-                questionCard: questionCard
-            });
-            io.to(game.roomId).emit('GameStatus',
-                {gameStatus: 'New turn: ' + game.playerList[game.judgePlayerIndex].playerName + ' is the judge; everyone else make a play.'});
+            startNextHand(game);
         } else {
             // Not everyone is ready yet.
             io.to(game.roomId).emit('GameStatus',
@@ -514,9 +546,6 @@ exports.setEventHandlers = function(socket) {
         const game = gameTable[player.gameId];
         console.log('on.Solution: ' + socket.id);
 
-        // Add a player reference to this solution, so we can know later who won.
-        data.solution.player = player;
-
         // Add this to the list of solutions played.
         game.solutionList.push(data.solution);
 
@@ -527,9 +556,24 @@ exports.setEventHandlers = function(socket) {
                 {gameStatus: game.playerList[game.judgePlayerIndex].playerName + ' is the judge; waiting for everyone to make a play (' +
                     game.solutionList.length + '/' + (game.playerList.length - 1) + ').'});
         } else {
+            // Sort the list in alphabetical order by the title or text of the first card;
+            // this will effectively randomize the list, so no one knows who played what card.
+            game.solutionList.sort(function(a, b) {
+                let aCard = a.cards[0];
+                let bCard = b.cards[0];
+                let aText = (aCard.title ? aCard.title : aCard.text);
+                let bText = (bCard.title ? bCard.title : bCard.text);
+                if (aText < bText)
+                    return -1;
+                else if (aText > bText)
+                    return 1;
+                else
+                    return 0;
+            });
+
             io.to(game.roomId).emit('SolutionList', {solutionList: game.solutionList});
             io.to(game.roomId).emit('GameStatus',
-                {gameStatus: game.playerList[game.judgePlayerIndex].playerName + ', choose the best solution.'});
+                {gameStatus: game.playerList[game.judgePlayerIndex].playerName + ': choose the best solution.'});
         }
 
     });

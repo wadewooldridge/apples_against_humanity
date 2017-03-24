@@ -4,20 +4,20 @@
     <img ng-show="!ngc.currentGame.gameTypeApples" src="images/cah_box.jpg">
     <hr>
     <h2>Choose a name for this game:</h2>
-    <input type="text" placeholder="Enter game name" ng-model="ngc.gameName" ng-change="ngc.onGameNameChange()">
+    <input type="text" placeholder="Enter game name" ng-model="ngc.gameName" ng-change="ngc.onGameNameChange()" autofocus>
     <h2>Choose a player name:</h2>
     <input type="text" placeholder="Enter unique player name" ng-model="ngc.playerName" ng-change="ngc.onPlayerNameChange()">
     <hr>
     <h2>Players:</h2>
         <table>
             <tr>
-                <th>Socket</th>
+                <!--<th>Socket</th>-->
                 <th>Player Name</th>
                 <th>Self</th>
                 <th>Host</th>
             </tr>
             <tr ng-repeat="player in ngc.playerList">
-                <td>{{player.socketId}}</td>
+                <!--<td>{{player.socketId}}</td>-->
                 <td>{{player.playerName}}</td>
                 <td><img src="images/blue_checkmark.png" ng-show="$index === ngc.mePlayerIndex"></td>
                 <td><img src="images/blue_checkmark.png" ng-show="$index === ngc.hostPlayerIndex"></td>

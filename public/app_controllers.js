@@ -259,9 +259,14 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     this.solutionCount = 0;
     this.solutionList = [];
     this.solutionsRevealed = false;
+
+    // Flags for when the winner of the hand is revealed.
     this.winnerRevealed = false;
     this.winningSolutionIndex = undefined;
     this.winningPlayerIndex = undefined;
+
+    // Flags for game over.
+    this.gameOver = false;
 
     // Select a card in the hand when it is clicked.
     this.onHandCardClick = function(index) {
@@ -269,7 +274,11 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
         const questionCard = self.questionCard;
         const clickedCard = self.handCardList[index];
 
-        if (questionCard === undefined) {
+        if (self.gameOver) {
+            // Reject click if game over.
+            $log.log('onHandCardClick: game over');
+            return;
+        } else if (questionCard === undefined) {
             // Reject click if no questionCard.
             $log.log('onHandCardClick: no questionCard');
             return;
@@ -287,6 +296,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             $log.log('onHandCardClick: undo');
             clickedCard.ordinal = 0;
             self.handCardsSelected--;
+            return;
         } else if (self.handCardsSelected >= self.questionCard.pick) {
             // Reject click if max answers already selected.
             $log.log('onHandCardClick: max');
@@ -303,7 +313,11 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
         $log.log('onPlayButton');
         const questionCard = self.questionCard;
 
-        if (questionCard === undefined) {
+        if (self.gameOver) {
+            // Reject click if game over.
+            $log.log('onPlayButton: game over');
+            return;
+        } else if (questionCard === undefined) {
             // Reject click if no questionCard.
             $log.log('onPlayButton: no questionCard');
             return;
@@ -342,7 +356,11 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
         $log.log('onResetButton');
         const questionCard = self.questionCard;
 
-        if (questionCard === undefined) {
+        if (self.gameOver) {
+            // Reject click if game over.
+            $log.log('onResetButton: game over');
+            return;
+        } else if (questionCard === undefined) {
             // Reject click if no questionCard.
             $log.log('onResetButton: no questionCard');
             return;
@@ -361,6 +379,12 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
         }
 
         // All checks passed; reset the selected cards in the hand.
+        self.resetHandSelection();
+    };
+
+    // Reset the selected cards from the hand.
+    this.resetHandSelection = function() {
+        $log.log('resetHandSelection');
         for (let i = 0; i < self.handCardList.length; i++) {
             self.handCardList[i].ordinal = 0;
         }
@@ -372,7 +396,11 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
         $log.log('onSolutionClick: ' + index);
         const questionCard = self.questionCard;
 
-        if (questionCard === undefined) {
+        if (self.gameOver) {
+            // Reject click if game over.
+            $log.log('onSolutionClick: game over');
+            return;
+        } else if (questionCard === undefined) {
             // Reject click if no questionCard.
             $log.log('onSolutionClick: no questionCard');
             return;
@@ -396,6 +424,33 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // Code that gets executed on controller initialization.
     $log.log('pgc:init');
     GameService.registerCallbacks({
+        // AbortHand: received when a player disconnects, so we have to abort the current hand.
+        AbortHand: function(data) {
+            $log.log('cb.AbortHand: ', data);
+
+            // Currently this is a placeholder. There is no work here; it is handled by the subsequent NewHand event.
+        },
+
+        // GameOver: received if a winner is declared, or if too many people drop out to continue.
+        GameOver: function(data) {
+            $log.log('cb.GameStatus: ', data);
+            // Set the flag to keep anyone from playing on.
+            self.gameOver = true;
+
+            // Log some status messages
+            self.gameStatus = 'Game Over: ' + data.messageText;
+            self.historyList.push('Game Over: ' + data.messageText);
+            self.historyList.push(data.scoreText);
+
+            // Todo: Make a pop-up to make sure everyone sees that the game is over.
+
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+            // Manually scroll to the bottom of the history.
+            let selector = $('#history-scroll');
+            $(selector).animate({ scrollTop: $(selector).prop('scrollHeight')}, 1000);
+        },
+
         // GameStatus: received throughout; update the current gameStatus and the historyList.
         GameStatus: function(data) {
             $log.log('cb.GameStatus: ', data);
@@ -403,7 +458,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             self.historyList.push(data.gameStatus);
             // Doesn't automatically update; do it manually.
             $scope.$apply();
-            // Manuall scroll to the bottom of the history.
+            // Manually scroll to the bottom of the history.
             let selector = $('#history-scroll');
             $(selector).animate({ scrollTop: $(selector).prop('scrollHeight')}, 1000);
         },
@@ -448,7 +503,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             $log.log('cb.NewHand: ', data);
 
             // Reset turn variables.
-            self.handCardsSelected = 0;
+            self.resetHandSelection();
             self.solutionCount = 0;
             self.solutionList = [];
             self.solutionsRevealed = false;
@@ -456,6 +511,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             self.winnerRevealed = false;
             self.winningSolutionIndex = undefined;
             self.winningPlayerIndex = undefined;
+            self.gameOver = false;
 
             // Get the data for the turn from the server.
             self.judgePlayerIndex = data.judgePlayerIndex;
@@ -469,11 +525,8 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
                                  safeText:  $sce.trustAsHtml(card.text),
                                  pick: card.pick};
 
-            // If current player is not judge, make sure to fill out the hand.
-            if (self.judgePlayerIndex != self.mePlayerIndex) {
-                // Fill our hand with answer cards.
-                GameService.send('NeedHandCards', {holding: self.handCardList.length})
-            }
+            // Fill out our hand with answer cards.
+            GameService.send('NeedHandCards', {holding: self.handCardList.length})
 
             // Reset the cards on the board so they show only outlines until somebody plays.
             self.solutionList = [];
@@ -496,8 +549,12 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             self.playerList = data.playerList;
             self.hostPlayerIndex = data.hostPlayerIndex;
             self.judgePlayerIndex = data.judgePlayerIndex;
-            if (self.judgePlayerIndex !== undefined)
+            if (self.judgePlayerIndex !== undefined) {
+                if (self.playerList[self.judgePlayerIndex] === undefined) {
+                    debugger;
+                }
                 self.judgePlayerName = self.playerList[self.judgePlayerIndex].playerName;
+            }
             self.mePlayerIndex = data.mePlayerIndex;
 
             // Doesn't automatically update; do it manually.

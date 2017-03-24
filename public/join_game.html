@@ -12,18 +12,18 @@
         <h2>{{jgc.gameName}}</h2>
     </div>
     <h2>Choose a player name:</h2>
-    <input type="text" placeholder="Enter unique player name" ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()">
+    <input type="text" placeholder="Enter unique player name" autofocus ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()">
     <hr>
     <h2>Players:</h2>
     <table>
         <tr>
-            <th>Socket</th>
+            <!--<th>Socket</th>-->
             <th>Player Name</th>
             <th>Self</th>
             <th>Host</th>
         </tr>
         <tr ng-repeat="player in jgc.playerList">
-            <td>{{player.socketId}}</td>
+            <!--<td>{{player.socketId}}</td>-->
             <td>{{player.playerName}}</td>
             <td><img src="images/blue_checkmark.png" ng-show="$index === jgc.mePlayerIndex"></td>
             <td><img src="images/blue_checkmark.png" ng-show="$index === jgc.hostPlayerIndex"></td>

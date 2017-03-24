@@ -170,6 +170,28 @@ function copyPlayerList(game) {
 }
 
 /**
+ *  Send a GameOver event, gathering extra score information.
+ */
+function sendGameOver(game, messageText) {
+    console.log('sendGameOver: ' + game.gameId + ': ' + messageText);
+
+    // Get the playerList, and sort by descending scores.
+    let playerList = copyPlayerList(game);
+    playerList.sort(function(p1, p2) {return p1.score - p2.score});
+
+    // Build a string representing the scores.
+    let scoreText = 'Final scores: ';
+    for (let i = 0; i < playerList.length; i++) {
+        let player = playerList[i];
+        if (i !== 0)
+            scoreText += ', ';
+        scoreText += player.playerName + ' = ' + player.score;
+    }
+
+    io.to(game.roomId).emit('GameOver', {messageText: messageText, scoreText: scoreText});
+}
+
+/**
  *  Start the next hand for a game.
  */
 function startNextHand(game) {
@@ -345,12 +367,20 @@ exports.setEventHandlers = function(socket) {
                 if (game.playerList[i].socketId === socket.id) {
                     const deletedHost = (i === game.hostPlayerIndex);
                     console.log('on.disconnect: ' + gameId + ' - ' + socket.id);
+
+                    // Remove this player from the playerList.
                     game.playerList.splice(i, 1);
 
                     if (game.playerList.length === 0) {
                         // If no more players in this game, delete the game.
                         console.log('on.disconnect: deleting gameId ' + gameId);
                         delete gameTable[gameId];
+                        return;
+                    } else if (game.playerList.length <= 2) {
+                        // If not enough players to continue on with the game, it is game over.
+                        console.log('on.disconnect: game over, only ' + game.playerList.length + ' players');
+                        sendGameOver(game, 'Not enough players left to continue.');
+                        return;
                     } else if (deletedHost) {
                         // Reassign host flag to the next user.
                         game.hostPlayerIndex = 0;
@@ -359,12 +389,21 @@ exports.setEventHandlers = function(socket) {
                 }
             }
 
+            // Notify the remaining players that a player has left.
+            io.to(game.roomId).emit('GameStatus', {
+                gameStatus: player.playerName + ' has left the game; aborting current hand.'});
+
+            // Notify that the current hand is being aborted.
+            io.to(game.roomId).emit('AbortHand', {});
+
             // Notify all players of the updated Player list.
+            // The judgePlayerIndex might be temporarily invalid, so send it as zero.
             io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
                                                    hostPlayerIndex: game.hostPlayerIndex,
-                                                   judgePlayerIndex: game.judgePlayerIndex});
+                                                   judgePlayerIndex: 0});
 
-            // Todo: abort the current hand and start a new one.
+            // Now try to start a new hand.
+            startNextHand(game);
         }
 
         // Remove from the playerTable.

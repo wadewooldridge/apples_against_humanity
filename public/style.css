@@ -10,6 +10,10 @@
     box-sizing: border-box;
 }
 
+body {
+    margin: 0;
+}
+
 .shaded {
     opacity: 0.3;
 }
@@ -156,6 +160,7 @@
 
 /* Styling for the Play Game page. */
 #play-game-div {
+    max-width: 1000px;
     text-align: center;
 }
 
@@ -165,13 +170,96 @@
     margin: 0.25em 0;
 }
 
+#page-title {
+    width: 100%;
+    height: 5vh;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+}
+
+#page-title h2 {
+    padding-top: 1vh;
+}
+
+#page-title img {
+    height: 4vh;
+    width: auto;
+    margin: 0.5vh 20px;
+}
+
+#column-1 {
+    width: 37.5%;
+    height: 95vh;
+    float: left;
+}
+
+#hand-div {
+    width: 100%;
+    height: 100%;
+    border: 1px solid blue;
+    background-color: aliceblue;
+    overflow: auto;
+}
+
+.ordinal-div {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 100%;
+    text-align: center;
+}
+
+.ordinal-circle {
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 100%;
+    color: white;
+    background-color: deeppink;
+}
+
+.ordinal-div p {
+    margin: 0;
+    padding: 0.75em 0;
+}
+
+#reset-button {
+    margin: 0.5em 1em;
+}
+
+#play-button {
+    margin: 0.5em 1em;
+}
+
+#column-2 {
+    width: 62.5%;
+    height: 95vh;
+    float: right;
+}
+
 #player-list-div {
+    width: 100%;
+    height: 10%;
     border: 1px solid darkviolet;
     background-color: #fff0ff;
 }
 
+#player-title-div {
+    width: 100%;
+    height: 20%;
+    overflow: hidden;
+}
+
+#player-title-div h4 {
+    margin: 0;
+}
+
 #players-div {
     width: 100%;
+    height: 80%;
     display: -webkit-flex;
     display: flex;
     -webkit-justify-content: center;
@@ -196,46 +284,18 @@
 
 #status-div {
     width: 100%;
+    height: 5%;
     border: 1px solid purple;
 }
 
-#hand-div {
-    width: 40%;
-    float: left;
-    border: 1px solid blue;
-    background-color: aliceblue;
-}
-
-#hand-div .ordinal {
-    display: inline-block;
-    position: relative;
-    /*top: 50%;*/
-    /*transform: translateY(-50%);*/
-    padding: 0.75em 1em;
-    border-radius: 100%;
-    color: white;
-    background-color: deeppink;
-}
-
-#reset-button {
-    margin: 0.5em 1em;
-}
-
-#play-button {
-    margin: 0.5em 1em;
-}
-
 .card {
-    width: 80%;
+    width: 300px;
     min-height: 4em;
-    margin-left: 5%;
     border: 1px solid black;
     border-radius: 6px;
 }
 
 .question-card {
-    width: 80%;
-    margin-left: 10%;
     background-color: white;
 }
 
@@ -271,6 +331,7 @@
 .question-card-text.cah {
     background-color: black;
     color: white;
+    font-size: 125%;
 }
 
 .question-card-back.a2a {
@@ -309,6 +370,10 @@
     color: white;
 }
 
+.answer-card-text.cah {
+    font-size: 125%;
+}
+
 .answer-card-back {
     width: 100%;
     height: 100%;
@@ -326,7 +391,8 @@
 }
 
 #board-div {
-    width: 60%;
+    width: 100%;
+    height: 70%;
     float: right;
     border: 1px solid darkgreen;
     background-color: #f0fff0;
@@ -356,12 +422,13 @@
 }
 
 .solution-winner {
-    font-weight: bold:
+    font-weight: bold;
     color: red;
 }
 
 #history-div {
-    width: 60%;
+    width: 100%;
+    height: 15%;
     bottom: 0;
     float: right;
     border: 1px solid darkgoldenrod;
@@ -369,7 +436,7 @@
 }
 
 #history-scroll {
-    height: 100px;
+    height: 85%;
     overflow: scroll;
     text-align: left;
 }
@@ -380,17 +447,44 @@
 
 /* Styling for adapting to mobile displays. */
 @media (orientation: portrait) and (max-width: 500px) {
-    /* Styling for the Play Game page. */
-    #hand-div {
-        width: 100%;
-    }
 
-    #board-div {
+    /* Styling for the Play Game page. */
+    #column-1,
+    #column-2 {
         width: 100%;
     }
 
     .answer-card.text {
         min-height: inherit;
     }
+
+}
+
+/* Styling for adapting to not-as-tall screens and displays. */
+
+/* Max-height: 900 for typical laptop display. */
+@media (max-height: 900px) {
+
+    /* Styling for the Play Game page. */
+    #page-title h2 {
+        padding-top: 0;
+    }
+
+    #player-list-div {
+        height: 15%;
+    }
+
+    #status-div {
+        height: 10%;
+    }
+
+    #board-div {
+        height: 60%;
+    }
+
+}
+
+/* Max-height: 675 for iPhone 6. */
+@media (max-height: 675px) {
 
 }

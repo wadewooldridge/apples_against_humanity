@@ -465,10 +465,14 @@ exports.setEventHandlers = function(socket) {
         const game = gameTable[player.gameId];
         const winningSolutionIndex = data.winningSolutionIndex;
         const winningPlayerIndex = data.winningPlayerIndex;
+        const winningPlayerName = game.playerList[winningPlayerIndex].playerName;
         console.log('on.JudgeSolutions: ' + player.gameId + ' = solution ' + winningSolutionIndex + ', player ' + winningPlayerIndex);
 
         // Update the score of the player selected.
         game.playerList[winningPlayerIndex].score++;
+
+        // Send a status update.
+        io.to(game.roomId).emit('GameStatus', {gameStatus: winningPlayerName + ' wins the hand.'});
 
         // Send out a notification of the winner of the hand.
         io.to(game.roomId).emit('HandOver', {

@@ -408,6 +408,11 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             // Reject click if this player is not the judge.
             $log.log('onSolutionClick: judge is not me');
             return;
+        } else if (self.solutionCount < (self.playerList.length - 1)) {
+            // Reject click if we don't have a full set of solutions in.
+            $log.log('onSolutionClick: not all solutions in');
+            debugger;
+            return;
         } else if (self.playedThisHand) {
             // Reject click if already selected one.
             $log.log('onSolutionClick: already played');
@@ -584,6 +589,9 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
                     card.safeText = $sce.trustAsHtml(card.text);
                 }
             }
+
+            // Update the solutionCount used in some conditionals.
+            self.solutionCount = self.solutionList.length;
 
             // Now flag that they can be revealed.
             self.solutionsRevealed = true;

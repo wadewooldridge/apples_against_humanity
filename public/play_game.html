@@ -75,6 +75,13 @@
             <hr>
             <p>Answer cards from the other players:</p>
             <div class="solution" ng-repeat="solution in pgc.solutionList" ng-init="solIndex = $index" ng-click="pgc.onSolutionClick($index)">
+                <div class="solution-player">
+                    <p ng-show="!pgc.winnerRevealed">???</p>
+                    <p ng-show="pgc.winnerRevealed">
+                        <span>{{pgc.playerList[solution.playerIndex].playerName}}</span>
+                        <span class="solution-winner" ng-show="solIndex === pgc.winningSolutionIndex"> &mdash; Winner!</span>
+                    </p>
+                </div>
                 <div class="solution-cards">
                     <div class="card answer-card solution-card" ng-repeat="card in solution.cards" ng-init="cardIndex = $index" ng-class="pgc.gameTypeClass">
                         <div ng-show="!pgc.solutionsRevealed && (solIndex < pgc.solutionCount)" class="card answer-card answer-card-back" ng-class="pgc.gameTypeClass">
@@ -86,10 +93,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="solution-player" ng-show="pgc.winnerRevealed">
-                    <p>{{pgc.playerList[solution.playerIndex].playerName}}</p>
-                    <p class="solution-winner" ng-show="solIndex === pgc.winningSolutionIndex">Winner!</p>
                 </div>
             </div>
         </div>

@@ -388,10 +388,19 @@ body {
 
 .question-card-text.cah,
 .answer-card-text.cah {
-    width: 90%;
+    width: 292px;
     height: 76px;
     margin: 2px 4px;
-    font-size: 125%;
+    font-size: 115%;
+}
+
+.question-card-text.cah p,
+.answer-card-text.cah p {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    margin: 0;
 }
 
 .question-card-text.cah {
@@ -428,20 +437,12 @@ body {
 }
 
 .solution {
-
-}
-
-.solution-cards {
-    width: 500px;
-}
-
-.solution-card {
-
+    width: 100%;
+    text-align: center;
 }
 
 .solution-player {
-    display: inline-block;
-    width: 100px;
+    width: 100%;
 }
 
 .solution-player p {
@@ -451,6 +452,20 @@ body {
 .solution-winner {
     font-weight: bold;
     color: red;
+}
+
+.solution-cards {
+    width: 100%;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+}
+
+.solution-card {
+    max-width: 300px;
 }
 
 #history-div {
@@ -503,11 +518,11 @@ body {
     }
 
     #status-div {
-        height: 10%;
+        height: 4%;
     }
 
     #board-div {
-        height: 60%;
+        height: 81%;        /* Push History into scroll area to see the whole board. */
     }
 
     /* Have to shrink card heights to fit, and shrink widths to allow for scroll bar. */
@@ -530,9 +545,9 @@ body {
 
     .question-card-text.cah,
     .answer-card-text.cah {
-        width: 90%;
+        width: 263px;
         height: 51px;
-        font-size: 100%;
+        font-size: 80%;
     }
 
     .ordinal-div {
@@ -557,5 +572,7 @@ body {
 
 /* Max-height: 675 for iPhone 6. */
 @media (max-height: 675px) {
-
+    #status-div {
+        height: 8%;     /* Needs two lines to hold status sometimes. */
+    }
 }

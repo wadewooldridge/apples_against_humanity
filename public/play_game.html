@@ -17,7 +17,9 @@
             <div ng-repeat="card in pgc.handCardList">
                 <div class="card answer-card answer-card-front" ng-click="pgc.onHandCardClick($index)">
                     <p ng-bind-html="card.safeTitle" class="answer-card-title" ng-class="pgc.gameTypeClass"></p>
-                    <p ng-bind-html="card.safeText" class="answer-card-text" ng-class="pgc.gameTypeClass"></p>
+                    <div class="answer-card-text" ng-class="pgc.gameTypeClass">
+                        <p ng-bind-html="card.safeText"></p>
+                    </div>
                 </div>
                 <div class="ordinal-div">
                     <div class="ordinal-circle" ng-show="card.ordinal">
@@ -66,7 +68,9 @@
             </p>
             <div class="card question-card question-card-front" ng-class="pgc.gameTypeClass">
                 <p ng-bind-html="pgc.questionCard.safeTitle" class="question-card-title" ng-class="pgc.gameTypeClass"></p>
-                <p ng-bind-html="pgc.questionCard.safeText" class="question-card-text" ng-class="pgc.gameTypeClass"></p>
+                <div class="question-card-text" ng-class="pgc.gameTypeClass">
+                    <p ng-bind-html="pgc.questionCard.safeText"></p>
+                </div>
             </div>
             <hr>
             <p>Answer cards from the other players:</p>
@@ -77,7 +81,9 @@
                         </div>
                         <div ng-show="pgc.solutionsRevealed">
                             <p ng-bind-html="card.safeTitle" class="answer-card-title" ng-class="pgc.gameTypeClass"></p>
-                            <p ng-bind-html="card.safeText" class="answer-card-text" ng-class="pgc.gameTypeClass"></p>
+                            <div class="answer-card-text" ng-class="pgc.gameTypeClass">
+                                <p ng-bind-html="card.safeText"></p>
+                            </div>
                         </div>
                     </div>
                 </div>

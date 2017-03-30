@@ -177,7 +177,7 @@ function sendGameOver(game, messageText) {
 
     // Get the playerList, and sort by descending scores.
     let playerList = copyPlayerList(game);
-    playerList.sort(function(p1, p2) {return p1.score - p2.score});
+    playerList.sort(function(p1, p2) {return p2.score - p1.score});
 
     // Build a string representing the scores.
     let scoreText = 'Final scores: ';
@@ -189,6 +189,26 @@ function sendGameOver(game, messageText) {
     }
 
     io.to(game.roomId).emit('GameOver', {messageText: messageText, scoreText: scoreText});
+}
+
+/**
+ *  Send a GameStatus event to all players in game.
+ */
+function sendGameStatus(game, messageText) {
+    console.log('sendGameStatus: ' + game.gameId + ': ' + messageText);
+
+    io.to(game.roomId).emit('GameStatus', {gameStatus: messageText});
+}
+
+/**
+ *  Send a PlayerLIst event to all players in game, gathering data as needed.
+ */
+function sendPlayerList(game) {
+    console.log('sendPlayerList: ' + game.gameId);
+
+    io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
+                                           hostPlayerIndex: game.hostPlayerIndex,
+                                           judgePlayerIndex: 0});
 }
 
 /**
@@ -218,8 +238,7 @@ function startNextHand(game) {
         judgePlayerIndex: game.judgePlayerIndex,
         questionCard: questionCard
     });
-    io.to(game.roomId).emit('GameStatus',
-        {gameStatus: 'New turn: ' + game.playerList[game.judgePlayerIndex].playerName + ' is the judge; everyone else make a play.'});
+    sendGameStatus(game, 'New turn: ' + game.playerList[game.judgePlayerIndex].playerName + ' is the judge; everyone else make a play.');
 }
 
 /**
@@ -390,8 +409,7 @@ exports.setEventHandlers = function(socket) {
             }
 
             // Notify the remaining players that a player has left.
-            io.to(game.roomId).emit('GameStatus', {
-                gameStatus: player.playerName + ' has left the game; aborting current hand.'});
+            sendGameStatus(game, player.playerName + ' has left the game; aborting current hand.');
 
             // Notify that the current hand is being aborted.
             io.to(game.roomId).emit('AbortHand', {});
@@ -448,9 +466,7 @@ exports.setEventHandlers = function(socket) {
             socket.emit('GameName', {gameName: game.gameName});
 
             // Notify all players of the updated Player list.
-            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
-                                                   hostPlayerIndex: game.hostPlayerIndex,
-                                                   judgePlayerIndex: game.judgePlayerIndex});
+            sendPlayerList(game);
 
         } else {
             console.log('on.JoinGame failed to find gameId: ' + gameId);
@@ -472,7 +488,7 @@ exports.setEventHandlers = function(socket) {
         game.playerList[winningPlayerIndex].score++;
 
         // Send a status update.
-        io.to(game.roomId).emit('GameStatus', {gameStatus: winningPlayerName + ' wins the hand.'});
+        sendGameStatus(game, winningPlayerName + ' wins the hand.');
 
         // Send out a notification of the winner of the hand.
         io.to(game.roomId).emit('HandOver', {
@@ -519,7 +535,7 @@ exports.setEventHandlers = function(socket) {
 
             // Check whether we have run out of cards; should never really happen.
             if (card === null) {
-                io.to(game.roomId).emit('GameStatus', {gameStatus: 'Game has run out of answer cards.'});
+                sendGameStatus(game, 'Game has run out of answer cards.');
                 break;
             } else {
                 console.log('on.NeedHandCards: ' + card);
@@ -545,9 +561,7 @@ exports.setEventHandlers = function(socket) {
             const game = getGameByGameId(gameId);
 
             // Notify all players of the updated Player list.
-            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
-                hostPlayerIndex: game.hostPlayerIndex,
-                judgePlayerIndex: game.judgePlayerIndex});
+            sendPlayerList(game);
         }
     });
 
@@ -559,9 +573,7 @@ exports.setEventHandlers = function(socket) {
         player.ready = true;
 
         // Make sure this player has an up-to-date copy of the playerList for the new controller.
-        io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
-            hostPlayerIndex: game.hostPlayerIndex,
-            judgePlayerIndex: game.judgePlayerIndex});
+        sendPlayerList(game);
         console.log('ReadyToStart: ' + game.judgePlayerIndex);
 
         // Keep track of when everyone is ready, to start the next round.
@@ -574,12 +586,11 @@ exports.setEventHandlers = function(socket) {
 
         if (readyCount === playerCount) {
             // Everyone is ready, start the next round.
-            io.to(game.roomId).emit('GameStatus', {gameStatus: 'Everyone is ready.'});
+            sendGameStatus(game, 'Everyone is ready.');
             startNextHand(game);
         } else {
             // Not everyone is ready yet.
-            io.to(game.roomId).emit('GameStatus',
-                {gameStatus: 'Waiting for players to be ready (' + readyCount + '/' + playerCount + ').'});
+            sendGameStatus(game, 'Waiting for players to be ready (' + readyCount + '/' + playerCount + ').');
         }
     });
 
@@ -595,9 +606,9 @@ exports.setEventHandlers = function(socket) {
         // If we still need more solutions, just send back SolutionCount, otherwise SolutionList.
         if (game.solutionList.length < (game.playerList.length - 1)) {
             io.to(game.roomId).emit('SolutionCount', {solutionCount: game.solutionList.length});
-            io.to(game.roomId).emit('GameStatus',
-                {gameStatus: game.playerList[game.judgePlayerIndex].playerName + ' is the judge; waiting for everyone to make a play (' +
-                    game.solutionList.length + '/' + (game.playerList.length - 1) + ').'});
+            sendGameStatus(game, game.playerList[game.judgePlayerIndex].playerName +
+                    ' is the judge; waiting for everyone to make a play (' +
+                    game.solutionList.length + '/' + (game.playerList.length - 1) + ').');
         } else {
             // Sort the list in alphabetical order by the title or text of the first card;
             // this will effectively randomize the list, so no one knows who played what card.
@@ -615,8 +626,7 @@ exports.setEventHandlers = function(socket) {
             });
 
             io.to(game.roomId).emit('SolutionList', {solutionList: game.solutionList});
-            io.to(game.roomId).emit('GameStatus',
-                {gameStatus: game.playerList[game.judgePlayerIndex].playerName + ': choose the best solution.'});
+            sendGameStatus(game, game.playerList[game.judgePlayerIndex].playerName + ': choose the best solution.');
         }
 
     });

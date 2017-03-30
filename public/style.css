@@ -235,12 +235,24 @@ body {
     display: inline-block;
 }
 
-#reset-button {
+.blurred {
+    opacity: 0.5;
+    filter: blur(1px) grayscale(100%);
+}
+
+#reset-button,
+#play-button {
     margin: 0.5em 1em;
 }
 
-#play-button {
-    margin: 0.5em 1em;
+#reset-button:enabled {
+    background-color: orange;
+    color: white;
+}
+
+#play-button:enabled {
+    background-color: blue;
+    color: white;
 }
 
 #column-2 {

@@ -12,7 +12,7 @@
     </div>
 
     <div id="column-1">
-        <div id="hand-div">
+        <div id="hand-div" ng-class="{blurred: pgc.judgePlayerIndex === pgc.mePlayerIndex}">
             <h4>Hand:</h4>
             <div ng-repeat="card in pgc.handCardList">
                 <div class="card answer-card answer-card-front" ng-click="pgc.onHandCardClick($index)">

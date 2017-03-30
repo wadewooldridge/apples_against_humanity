@@ -5,14 +5,14 @@
     <hr>
     <div ng-show="jgc.hostPlayerIndex === jgc.mePlayerIndex">
         <h2>Choose a name for this game:</h2>
-        <input type="text" placeholder="Enter game name" ng-model="jgc.gameName" ng-change="jgc.onGameNameChange()">
+        <input id="game-name-input" type="text" placeholder="Enter game name" ng-model="jgc.gameName" ng-change="jgc.onGameNameChange()">
     </div>
     <div ng-show="jgc.hostPlayerIndex !== jgc.mePlayerIndex">
         <h2>The name for this game is:</h2>
         <h2>{{jgc.gameName}}</h2>
     </div>
     <h2>Choose a player name:</h2>
-    <input type="text" placeholder="Enter unique player name" ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()" autofocus>
+    <input id="player-name-input" type="text" placeholder="Enter unique player name" ng-model="jgc.playerName" ng-change="jgc.onPlayerNameChange()" autofocus>
     <hr>
     <h2>Players:</h2>
     <table>
@@ -24,7 +24,7 @@
         </tr>
         <tr ng-repeat="player in jgc.playerList">
             <!--<td>{{player.socketId}}</td>-->
-            <td>{{player.playerName}}</td>
+            <td>&nbsp;{{player.playerName}}&nbsp;</td>
             <td><img src="images/blue_checkmark.png" ng-show="$index === jgc.mePlayerIndex"></td>
             <td><img src="images/blue_checkmark.png" ng-show="$index === jgc.hostPlayerIndex"></td>
         </tr>

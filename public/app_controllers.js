@@ -152,6 +152,7 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
             $scope.$apply();
         }
     });
+    $('#player-name-input').focus();
 
 }]);
 
@@ -222,6 +223,8 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
         }
     });
 
+    // Start with the focus in the first field; autofocus not reliable on all browsers.
+    $('#game-name-input').focus();
 }]);
 
 // Controller for Play Game page.
@@ -447,7 +450,8 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
             self.historyList.push('Game Over: ' + data.messageText);
             self.historyList.push(data.scoreText);
 
-            // Todo: Make a pop-up to make sure everyone sees that the game is over.
+            // Make a pop-up to make sure everyone sees that the game is over.
+            alert(data.messageText + '\n' + data.scoreText);
 
             // Doesn't automatically update; do it manually.
             $scope.$apply();

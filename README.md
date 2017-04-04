@@ -13,3 +13,9 @@ been used throughout the code:
     - solution: an array of one or more answers cards from one player.
     - judge: the player that chooses the best solution from the other players.
     - host: the player that creates, configures, and launches the game.
+
+## To Do:
+- Add alert that leaving the Play Game window will exit the game.
+- Clean up CAH fit of multiple cards in solution on mobile.
+- Check into using a "text fit" library to better fit card text.
+- Create design notes diagram.

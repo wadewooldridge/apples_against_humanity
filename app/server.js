@@ -109,8 +109,6 @@ io.on('connection', function(socket) {
     console.log('io.connection: ' + socket.id);
     //console.dir(socket);
 
-    socket.emit('test', {testData: 123});
-
     // Create a Player object for the existing socket.
     gameList.createPlayer(socket);
 

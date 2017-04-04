@@ -27,5 +27,6 @@
     <hr>
     <h2>When you have named the game,</h2>
     <h2>and all players have joined:</h2>
-    <button class="launch-game-button" ng-disabled="!ngc.gameName || (ngc.playerList.length < 3)" ng-click="ngc.onLaunchButton()">Launch The Game</button>
+    <button class="launch-game-button" ng-disabled="ngc.gameOver || !ngc.gameName || (ngc.playerList.length < 3)"
+            ng-click="ngc.onLaunchButton()">Launch The Game</button>
 </div>

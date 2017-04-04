@@ -43,6 +43,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      *  Main socket for the connection to the game server.
      */
     this.socket = undefined;
+    this.isConnected            = function() {return (this.socket !== undefined)};
 
     /**
      *  Callbacks that the controller has requested.
@@ -105,7 +106,7 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.setCurrentGame = function(gameId) {
         $log.log('GameService.setCurrentGame: ' + gameId);
         this.currentGameId = gameId;
-        if (this.currentGameTable != null) {
+        if (this.currentGameTable !== null) {
             this.currentGame = this.currentGameTable[gameId];
         }
     };
@@ -131,16 +132,29 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
     this.connect = function() {
         $log.log('GameService.connect');
 
+        // Double-check that we don't already have a socket; if so, we will not get the connect
+        // event back, so we have to explicitly send a JoinGame message to connect to the right game.
+        if (this.socket !== undefined) {
+            $log.log('GameServer.connect: already connected');
+            self.send('JoinGame', {gameId: self.currentGame.gameId});
+            return;
+        }
+
+        // Create a socket to the server.
         this.socket = io('http://192.168.1.137:3001');
 
+        // Set message handler for when the connection starts.
         this.socket.on('connect', function () {
             const socket = this;
             $log.log('io.connect: ' + socket.id);
             self.send('JoinGame', {gameId: self.currentGame.gameId});
         });
 
-        this.socket.on('test', function (data) {
-            $log.log('io.test: ',  data);
+        // Set message handler for if the connection breaks.
+        this.socket.on('disconnect', function() {
+            $log.log('io.disconnect');
+            self.socket = undefined;
+            self.checkCallback('disconnect');
         });
 
         // These various handlers received messages from the server, update the
@@ -223,6 +237,23 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
             self.checkCallback('SolutionList', data);
         });
 
+    };
+
+    /**
+     *  Disconnect the socket from the game server.
+     */
+    this.disconnect = function() {
+        $log.log('GameService.disconnect');
+
+        // Double-check to see if we are already disconnected.
+        if (this.socket === undefined) {
+            $log.log('GameServer.disconnect: already disconnected');
+            return;
+        }
+
+        // Force a disconnect.
+        this.socket.disconnect();
+        this.socket = undefined;
     };
 
     /**

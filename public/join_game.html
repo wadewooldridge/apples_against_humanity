@@ -34,7 +34,8 @@
     <div ng-show="jgc.hostPlayerIndex === jgc.mePlayerIndex">
         <h2>When you have named the game,</h2>
         <h2>and all players have joined:</h2>
-        <button class="launch-game-button" ng-disabled="!jgc.gameName || (jgc.playerList.length < 3)" ng-click="jgc.onLaunchButton()">Launch The Game</button>
+        <button class="launch-game-button" ng-disabled="jgc.gameOver || !jgc.gameName || (jgc.playerList.length < 3)"
+                ng-click="jgc.onLaunchButton()">Launch The Game</button>
     </div>
     <div ng-show="jgc.hostPlayerIndex !== jgc.mePlayerIndex">
         <h2>Waiting for host to launch the game</h2>

@@ -68,7 +68,8 @@ class Game {
         this.roomId = 'Room-' + gameId;
         this.gameTypeApples = gameTypeApples;
         this.gameName = '';
-        this.launched = false;
+        this.gameLaunched = false;
+        this.gameOver = false;
 
         // Decks to be used for the game.
         this.questionDeck = undefined;
@@ -170,10 +171,77 @@ function copyPlayerList(game) {
 }
 
 /**
+ *  Remove a player from the game, adjusting the game as necessary.
+ */
+function removePlayerFromGame(player, gameId) {
+    const socketId = player.socketId;
+    const game = gameTable[gameId];
+    console.log('removePlayerFromGame: ' + gameId + ' - ' + socketId);
+    if (game === undefined) {
+        return;
+    }
+
+    // Step through the game's players and find the matching socket ID.
+    for (let i = 0; i < game.playerList.length; i++) {
+        if (game.playerList[i].socketId === socketId) {
+            const deletedHost = (i === game.hostPlayerIndex);
+
+            // Remove this player from the playerList.
+            game.playerList.splice(i, 1);
+
+            if (game.playerList.length === 0) {
+                // If no more players in this game, delete the game.
+                console.log('removePlayerFromGame: deleting gameId ' + gameId);
+                delete gameTable[gameId];
+                return;
+            } else if (game.playerList.length <= 2 && game.gameLaunched && !game.gameOver) {
+                // If not enough players to continue on with the game, it is game over.
+                // Check gameLaunched flag, as players can leave a game that is not yet launched.
+                // Check gameOver flag, to prevent notifying multiple times as players quit.
+                console.log('removePlayerFromGame: game over, only ' + game.playerList.length + ' players');
+                sendGameOver(game, 'Not enough players left to continue.');
+                return;
+            } else if (deletedHost) {
+                // Reassign host flag to the next user.
+                game.hostPlayerIndex = 0;
+            }
+            break;
+        }
+    }
+
+    // Notify all players of the updated Player list.
+    // The judgePlayerIndex might be temporarily invalid, so send it as zero.
+    io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
+        hostPlayerIndex: game.hostPlayerIndex,
+        judgePlayerIndex: 0});
+
+    // If the game has launched, but is not yet over, abort the hand and start a new one.
+    if (game.gameLaunched && !game.gaveOver) {
+        // Notify the remaining players that a player has left.
+        sendGameStatus(game, player.playerName + ' has left the game; aborting current hand.');
+
+        // Notify that the current hand is being aborted.
+        io.to(game.roomId).emit('AbortHand', {});
+
+        // Now try to start a new hand.
+        startNextHand(game);
+    }
+}
+
+/**
  *  Send a GameOver event, gathering extra score information.
  */
 function sendGameOver(game, messageText) {
     console.log('sendGameOver: ' + game.gameId + ': ' + messageText);
+
+    // If the gameOver flag is already set, we have already sent out the GameOver message; just return.
+    if (game.gameOver) {
+        console.log('sendGameOver: game already over');
+        return;
+    }
+
+    // Set the flag to prevent duplicate notifications.
+    game.gameOver = true;
 
     // Get the playerList, and sort by descending scores.
     let playerList = copyPlayerList(game);
@@ -260,26 +328,28 @@ exports.createPlayer = createPlayer = function(socket) {
 };
 
 /**
- *  Get all games.
+ *  Get all games (only return games that can be joined, i.e. not launched and not over).
  */
 exports.getAllGames = getAllGames = function() {
     console.log('GameList.getAllGames');
     const retObj = {};
     for (let key in gameTable) {
         const game = gameTable[key];
-        retObj[key] = copyGame(game);
+        if (!game.gameLaunched && !game.gameOver) {
+            retObj[key] = copyGame(game);
+        }
     }
     return retObj;
 };
 
 /**
- *  Get games by gameType.
+ *  Get games by gameType (only return games that can be joined, i.e. not launched and not over).
  */
 exports.getGamesByGameType = getGamesByGameType = function(gameTypeApples) {
     const retObj = {};
     for (let key in gameTable) {
         const game = gameTable[key];
-        if (game.gameTypeApples === gameTypeApples) {
+        if (game.gameTypeApples === gameTypeApples && !game.gameLaunched && !game.gameOver) {
             retObj[key] = copyGame(game);
         }
     }
@@ -303,7 +373,7 @@ exports.getDebugDump = function() {
         gameTableCopy[key] = copyGame(gameTable[key]);
     }
 
-    // Build sanititized version of playerTable.
+    // Build sanitized version of playerTable.
     const playerTableCopy = {};
     for (let key in playerTable) {
         playerTableCopy[key] = copyPlayer(playerTable[key]);
@@ -381,47 +451,7 @@ exports.setEventHandlers = function(socket) {
         // If joined in a game, remove from the game.
         const gameId = player.gameId;
         if (gameId) {
-            const game = gameTable[gameId];
-            for (let i = 0; i < game.playerList.length; i++) {
-                if (game.playerList[i].socketId === socket.id) {
-                    const deletedHost = (i === game.hostPlayerIndex);
-                    console.log('on.disconnect: ' + gameId + ' - ' + socket.id);
-
-                    // Remove this player from the playerList.
-                    game.playerList.splice(i, 1);
-
-                    if (game.playerList.length === 0) {
-                        // If no more players in this game, delete the game.
-                        console.log('on.disconnect: deleting gameId ' + gameId);
-                        delete gameTable[gameId];
-                        return;
-                    } else if (game.playerList.length <= 2) {
-                        // If not enough players to continue on with the game, it is game over.
-                        console.log('on.disconnect: game over, only ' + game.playerList.length + ' players');
-                        sendGameOver(game, 'Not enough players left to continue.');
-                        return;
-                    } else if (deletedHost) {
-                        // Reassign host flag to the next user.
-                        game.hostPlayerIndex = 0;
-                    }
-                    break;
-                }
-            }
-
-            // Notify the remaining players that a player has left.
-            sendGameStatus(game, player.playerName + ' has left the game; aborting current hand.');
-
-            // Notify that the current hand is being aborted.
-            io.to(game.roomId).emit('AbortHand', {});
-
-            // Notify all players of the updated Player list.
-            // The judgePlayerIndex might be temporarily invalid, so send it as zero.
-            io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
-                                                   hostPlayerIndex: game.hostPlayerIndex,
-                                                   judgePlayerIndex: 0});
-
-            // Now try to start a new hand.
-            startNextHand(game);
+            removePlayerFromGame(player, gameId);
         }
 
         // Remove from the playerTable.
@@ -435,10 +465,14 @@ exports.setEventHandlers = function(socket) {
         const gameName = data.gameName;
         console.log('GameList.setGameName: ' + gameId + ' = ' + gameName);
         const game = gameTable[gameId];
-        game.gameName = gameName;
 
-        // Notify all players of the updated game name.
-        io.to(game.roomId).emit('GameName', {gameName: gameName});
+        // Protect against a race condition of deleting the game and getting this message.
+        if (game !== undefined) {
+            game.gameName = gameName;
+
+            // Notify all players of the updated game name.
+            io.to(game.roomId).emit('GameName', {gameName: gameName});
+        }
     });
 
     // JoinGame: received from any player to join an existing game.
@@ -448,25 +482,41 @@ exports.setEventHandlers = function(socket) {
         const player = playerTable[socket.id];
         const game = getGameByGameId(gameId);
         if (game) {
-            game.playerList.push(player);
-            player.gameId = gameId;
+            if (game.gameLaunched) {
+                console.log('on.JoinGame failed to join gameId: ' + gameId + ': game launched');
+                socket.emit('JoinFailed', {reason: 'Game ID ' + gameId + ' is already launched.'})
+            } else if (game.gameOver) {
+                console.log('on.JoinGame failed to join gameId: ' + gameId + ': game over');
+                socket.emit('JoinFailed', {reason: 'Game ID ' + gameId + ' is already over.'})
+            } else {
+                // If this player is already a member of another game, remove him from that
+                // game, and delete that game if there are no more players.
+                if (player.gameId) {
+                    console.log('on.JoinGame: removing player ' + player.socketId + ' from gameId: ' + player.gameId);
+                    removePlayerFromGame(player, player.gameId);
+                }
 
-            // If the first player in, call him the host.
-            if (game.hostPlayerIndex === undefined) {
-                game.hostPlayerIndex = 0;
+                // Add the player to the specified game.
+                game.playerList.push(player);
+                player.gameId = gameId;
+
+                // If the first player in, call him the host.
+                if (game.hostPlayerIndex === undefined) {
+                    game.hostPlayerIndex = 0;
+                }
+
+                // Use the gameId as the socket.io room identifier.
+                socket.join(game.roomId);
+
+                // Notify this player that the JoinGame succeeded.
+                socket.emit('JoinSucceeded', {});
+
+                // Notify this player of the current game name.
+                socket.emit('GameName', {gameName: game.gameName});
+
+                // Notify all players of the updated Player list.
+                sendPlayerList(game);
             }
-
-            // Use the gameId as the socket.io room identifier.
-            socket.join(game.roomId);
-
-            // Notify this player that the JoinGame succeeded.
-            socket.emit('JoinSucceeded', {});
-
-            // Notify this player of the current game name.
-            socket.emit('GameName', {gameName: game.gameName});
-
-            // Notify all players of the updated Player list.
-            sendPlayerList(game);
 
         } else {
             console.log('on.JoinGame failed to find gameId: ' + gameId);
@@ -508,6 +558,7 @@ exports.setEventHandlers = function(socket) {
         const player = playerTable[socket.id];
         const game = gameTable[player.gameId];
         console.log('on.Launch: ' + player.gameId);
+        game.gameLaunched = true;
 
         // Load the card decks for the game. Make a copy of the master decks.
         if (game.gameTypeApples) {
@@ -559,6 +610,8 @@ exports.setEventHandlers = function(socket) {
         const gameId = player.gameId;
         if (gameId) {
             const game = getGameByGameId(gameId);
+            if (game === undefined)
+                return;
 
             // Notify all players of the updated Player list.
             sendPlayerList(game);
@@ -615,11 +668,11 @@ exports.setEventHandlers = function(socket) {
             game.solutionList.sort(function(a, b) {
                 let aCard = a.cards[0];
                 let bCard = b.cards[0];
-                let aText = (aCard.title ? aCard.title : aCard.text);
-                let bText = (bCard.title ? bCard.title : bCard.text);
-                if (aText < bText)
+                let aCompare = (aCard.title ? aCard.title : aCard.text);
+                let bCompare = (bCard.title ? bCard.title : bCard.text);
+                if (aCompare < bCompare)
                     return -1;
-                else if (aText > bText)
+                else if (aCompare > bCompare)
                     return 1;
                 else
                     return 0;

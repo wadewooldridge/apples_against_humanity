@@ -78,6 +78,15 @@ app.controller('chooseGameController', ['$interval', '$location', '$log', 'GameS
     $log.log('cgc:init');
     this.startIntervalTimer();
 
+    // If we are already connected, force a disconnect. Otherwise browsing "back" to this page leaves the
+    // connection open, and can cause ambiguous results for what game this player is a member of. Clear
+    // out the callbacks as well, so we don't get callbacks from other controllers.
+    if (GameService.isConnected()) {
+        $log.log('cgc:init: forcing disconnect');
+        GameService.registerCallbacks({});
+        GameService.disconnect();
+    }
+
 }]);
 
 // Controller for Join Game page.
@@ -99,6 +108,9 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
     // Which player is the host, and which is me.
     this.hostPlayerIndex = undefined;
     this.mePlayerIndex = undefined;
+
+    // Game flags.
+    this.gameOver = false;
 
     // Handler for Launch button.
     this.onLaunchButton = function() {
@@ -124,6 +136,28 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
     $log.log('jgc:init');
     GameService.connect();
     GameService.registerCallbacks({
+        // disconnect: received on unexpected socket disconnect.
+        disconnect: function() {
+            $log.log('cb.disconnect');
+
+            // Set the flag to keep anyone from playing on.
+            self.gameOver = true;
+
+            // Make a pop-up to make sure everyone sees that the game is toast.
+            alert('Unexpected disconnect from server');
+        },
+        // GameOver: received instead of Launched if too many people drop out to continue.
+        GameOver: function(data) {
+            $log.log('cb.GameOver: ', data);
+            // Set the flag to keep anyone from playing on.
+            self.gameOver = true;
+
+            // Make a pop-up to make sure everyone sees that the game is over.
+            alert('Game Over: ' + data.messageText);
+
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
         GameName: function(data) {
             $log.log('cb.GameName: ', data);
             self.gameName = data.gameName;
@@ -135,6 +169,8 @@ app.controller('joinGameController', ['$interval', '$location', '$log', '$scope'
         },
         JoinFailed: function(data) {
             $log.log('cb.JoinFailed: ', data);
+            // Make a pop-up to make sure the player sees the failure.
+            alert('JoinGame failed: ' + data.reason);
         },
         Launched: function(data) {
             $log.log('cb.Launched: ', data);
@@ -176,6 +212,9 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
     this.hostPlayerIndex = undefined;
     this.mePlayerIndex = undefined;
 
+    // Game flags.
+    this.gameOver = false;
+
     // Handler for changing game name: notify the server.
     this.onGameNameChange = function() {
         $log.log('ngc.onGameNameChange: ' + this.gameName);
@@ -200,11 +239,35 @@ app.controller('newGameController', ['$interval', '$location', '$log', '$scope',
     $log.log('ngc:init');
     GameService.connect();
     GameService.registerCallbacks({
+        // disconnect: received on unexpected socket disconnect.
+        disconnect: function() {
+            $log.log('cb.disconnect');
+
+            // Set the flag to keep anyone from playing on.
+            self.gameOver = true;
+
+            // Make a pop-up to make sure everyone sees that the game is toast.
+            alert('Unexpected disconnect from server');
+        },
+        // GameOver: received instead of Launched if too many people drop out to continue.
+        GameOver: function(data) {
+            $log.log('cb.GameOver: ', data);
+            // Set the flag to keep anyone from playing on.
+            self.gameOver = true;
+
+            // Make a pop-up to make sure everyone sees that the game is over.
+            alert('Game Over: ' + data.messageText);
+
+            // Doesn't automatically update; do it manually.
+            $scope.$apply();
+        },
         JoinSucceeded: function(data) {
             $log.log('cb.JoinSucceeded: ', data);
         },
         JoinFailed: function(data) {
             $log.log('cb.JoinFailed: ', data);
+            // Make a pop-up to make sure the player sees the failure.
+            alert('JoinGame failed: ' + data.reason);
         },
         Launched: function(data) {
             $log.log('cb.Launched: ', data);
@@ -432,6 +495,17 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
     // Code that gets executed on controller initialization.
     $log.log('pgc:init');
     GameService.registerCallbacks({
+        // disconnect: received on unexpected socket disconnect.
+        disconnect: function() {
+            $log.log('cb.disconnect');
+
+            // Set the flag to keep anyone from playing on.
+            self.gameOver = true;
+
+            // Make a pop-up to make sure everyone sees that the game is toast.
+            alert('Unexpected disconnect from server');
+        },
+
         // AbortHand: received when a player disconnects, so we have to abort the current hand.
         AbortHand: function(data) {
             $log.log('cb.AbortHand: ', data);
@@ -441,7 +515,7 @@ app.controller('playGameController', ['$interval', '$location', '$log', '$sce', 
 
         // GameOver: received if a winner is declared, or if too many people drop out to continue.
         GameOver: function(data) {
-            $log.log('cb.GameStatus: ', data);
+            $log.log('cb.GameOver: ', data);
             // Set the flag to keep anyone from playing on.
             self.gameOver = true;
 

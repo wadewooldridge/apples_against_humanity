@@ -59,7 +59,10 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.getGameTable = function() {
         $log.log('GameService.getGameTable');
-        const url = 'http://192.168.1.137:3000/games';
+        const url = $location.protocol() + '://' +
+                    $location.host() + ':' +
+                    $location.port() + '/games';
+        $log.log(url);
 
         return $http({
             method: 'GET',
@@ -81,7 +84,9 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
      */
     this.startNewGame = function(gameTypeApples) {
         $log.log('GameService.startNewGame: ' + gameTypeApples);
-        const url = 'http://192.168.1.137:3000/new/' + (gameTypeApples ? 'a2a' : 'cah');
+        const url = $location.protocol() + '://' +
+                    $location.host() + ':' +
+                    $location.port() + '/new/' + (gameTypeApples ? 'a2a' : 'cah');
         $log.log(url);
 
         return $http({
@@ -141,7 +146,9 @@ app.service('GameService', ['$http', '$location', '$log', '$q', function($http, 
         }
 
         // Create a socket to the server.
-        this.socket = io('http://192.168.1.137:3001');
+        const url = $location.protocol() + '://' + $location.host() + ':3001';
+        $log.log(url);
+        this.socket = io(url);
 
         // Set message handler for when the connection starts.
         this.socket.on('connect', function () {

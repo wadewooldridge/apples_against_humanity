@@ -20,7 +20,7 @@ class Deck {
     }
 
     getRandomCard() {
-        console.log('getRandomCard: ' + this.deckName);
+        //console.log('getRandomCard: ' + this.deckName);
 
         if (this.cardArray.length === 0) {
             return null;
@@ -272,7 +272,7 @@ function sendGameStatus(game, messageText) {
  *  Send a PlayerLIst event to all players in game, gathering data as needed.
  */
 function sendPlayerList(game) {
-    console.log('sendPlayerList: ' + game.gameId);
+    //console.log('sendPlayerList: ' + game.gameId);
 
     io.to(game.roomId).emit('PlayerList', {playerList: copyPlayerList(game),
                                            hostPlayerIndex: game.hostPlayerIndex,
@@ -589,7 +589,7 @@ exports.setEventHandlers = function(socket) {
                 sendGameStatus(game, 'Game has run out of answer cards.');
                 break;
             } else {
-                console.log('on.NeedHandCards: ' + card);
+                //console.log('on.NeedHandCards: ' + card);
                 handCards.push(card);
             }
         }

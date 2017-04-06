@@ -1,9 +1,14 @@
 # apples_against_humanity
 "Apples to Apples" and "Cards Against Humanity" multi-player server in Node.JS.
 
+Version 1.0.2 of the application is currently deployed at
+http://games.wadewooldridge.com:3000
+
 ## Source Code Notes
+- A diagram showing the overview of the client and server components can
+be found in the file README.png.
 - Since the code can play both Apples to Apples and Cards Against Humanity,
-the code is writtent generic between the two.  Some of the terms that have
+the code is written generic between the two.  Some of the terms that have
 been used throughout the code:
     - a2a: shorthand for Apples To Apples.
     - cah: shorthand for Cards Against Humanity.
@@ -16,6 +21,7 @@ been used throughout the code:
 
 ## To Do:
 - Add alert that leaving the Play Game window will exit the game.
+- Make the mobile use a "slide right" to see the player's hand.
 - Clean up CAH fit of multiple cards in solution on mobile.
 - Check into using a "text fit" library to better fit card text.
 - Create design notes diagram.

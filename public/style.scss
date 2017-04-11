@@ -1,0 +1,551 @@
+/**
+ *  apples_against_humanity - Apples-to-Apples and Cards Against Humanity multi-player game.
+ *  Copyright (C) 2017 by Wade Wooldridge
+ *
+ *  style.scss - Client SCSS file
+ *  NOTE: DO NOT EDIT THE style.css FILE!
+ *  Edit the style.scss file, then use npm run build-css to compile this into the style.css file.
+ */
+
+/* Styling for overall program. */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    text-align: center;
+}
+
+.shaded {
+    opacity: 0.3;
+}
+
+/* Variables. */
+$startup-max-width: 600px;
+$play-max-width: 1200px;
+
+/* Mix-ins. */
+@mixin big-button {
+    button {
+        margin: 0.5em auto;
+        font-size: 150%;
+        border: 2px solid black;
+    }
+
+    button:hover {
+        border: 2px solid limegreen;
+    }
+}
+
+@mixin big-input {
+    input {
+        width: 80%;
+        text-align: center;
+        margin-bottom: 1em;
+        font-size: 125%;
+    }
+}
+
+@mixin center-headings {
+    h2,
+    h4 {
+        text-align: center;
+        margin: 0.25em 0;
+    }
+}
+
+@mixin table-borders {
+    table,
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+    }
+
+    table {
+        width: 80%;
+        margin-left: 10%;
+        border-collapse: collapse;
+    }
+}
+
+@mixin table-of-games {
+    table {
+        img {
+            width: 50px;
+            height: 50px;
+        }
+    }
+}
+
+@mixin table-of-players {
+    table {
+        img {
+            width: auto;
+            height: 1em;
+        }
+    }
+}
+
+/* Styling for the Choose Game page. */
+#choose-game-div {
+    max-width: $startup-max-width;
+    @include center-headings;
+
+    .game-box-div {
+        display: inline-block;
+        width: 40%;
+        margin: 0.5em 4%;
+
+        img {
+            width: 100%;
+            height: 100%;
+        }
+
+        @include big-button;
+    }
+
+    @include table-borders;
+    @include table-of-games;
+}
+
+/* Styling for the New Game page. */
+#new-game-div {
+    max-width: $startup-max-width;
+    @include center-headings;
+
+    img {
+        width: 150px;
+    }
+
+    @include big-input;
+    @include table-borders;
+    @include table-of-players;
+    @include big-button;
+}
+
+/* Styling for the Join Game page. */
+#join-game-div {
+    max-width: $startup-max-width;
+    @include center-headings;
+
+    img {
+        width: 150px;
+    }
+
+    @include big-input;
+    @include table-borders;
+    @include table-of-players;
+}
+
+/* Styling for the Play Game page. */
+#play-game-div {
+    max-width: $play-max-width;
+    @include center-headings;
+}
+
+#page-title {
+    width: 100%;
+    height: 5vh;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+
+    h2 {
+        padding-top: 1vh;
+    }
+
+    img {
+        height: 4vh;
+        width: auto;
+        margin: 0.5vh 20px;
+    }
+}
+
+#column-1 {
+    width: 42%;
+    height: 95vh;
+    float: left;
+}
+
+#hand-div {
+    width: 100%;
+    height: 100%;
+    border: 1px solid blue;
+    background-color: aliceblue;
+    overflow: auto;
+
+    .ordinal-div {
+        display: inline-block;
+        vertical-align: bottom;
+        position: relative;
+        width: 50px;
+        height: 50px;
+        margin: 0 5px 20px 5px;
+
+        p {
+            margin: 0;
+            padding: 0.85em 0;
+        }
+    }
+
+    .ordinal-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 100%;
+        color: white;
+        background-color: deeppink;
+    }
+
+    .card {
+        display: inline-block;
+    }
+}
+
+.blurred {
+    opacity: 0.5;
+    filter: blur(1px) grayscale(100%);
+}
+
+#reset-button,
+#play-button {
+    margin: 0.5em 1em;
+}
+
+#reset-button:enabled {
+    background-color: orange;
+    color: white;
+}
+
+#play-button:enabled {
+    background-color: blue;
+    color: white;
+}
+
+#column-2 {
+    width: 58%;
+    height: 95vh;
+    float: right;
+}
+
+#player-list-div {
+    width: 100%;
+    height: 10%;
+    border: 1px solid darkviolet;
+    background-color: #fff0ff;
+}
+
+#player-title-div {
+    width: 100%;
+    height: 20%;
+    overflow: hidden;
+
+    h4 {
+        margin: 0;
+    }
+}
+
+#players-div {
+    width: 100%;
+    height: 80%;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: center;
+    justify-content: center;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+
+    .player-div {
+        width: 100%;
+        border: 1px solid darkviolet;
+
+        p {
+            margin: 0.25em 0;
+        }
+    }
+}
+
+.player-judge {
+    font-weight: bold;
+    color: darkred;
+}
+
+#status-div {
+    width: 100%;
+    height: 5%;
+    border: 1px solid purple;
+
+    p {
+        top: 50%;
+        transform: translateY(-50%);
+        -webkit-transform: translateY(-50%);
+    }
+}
+
+#board-div {
+    .question-card,
+    .solution-card {
+        margin: auto;
+    }
+}
+
+#board-div > p {
+    margin: 0 0 5px 0;
+}
+
+.card {
+    width: 300px;
+    height: 80px;
+    margin-bottom: 5px;
+    border: 1px solid black;
+    border-radius: 6px;
+}
+
+.question-card,
+.answer-card {
+    background-color: white;
+}
+
+.question-card-front.a2a,
+.answer-card-front.a2a {
+}
+
+.question-card-front.cah {
+    background-color: black;
+}
+
+.question-card-title.a2a,
+.answer-card-title.a2a {
+    width: 292px;
+    height: 16px;
+    margin: 0 4px 5px 4px;
+    font-size: 115%;
+    font-weight: bolder;
+}
+
+.question-card-text.a2a,
+.answer-card-text.a2a {
+    width: 293px;
+    height: 55px;
+    margin: 2px 3px;
+    border-radius: 4px;
+    font-size: 90%;
+}
+
+.question-card-text.a2a p,
+.answer-card-text.a2a p {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    margin: 0;
+}
+
+.question-card-text.a2a {
+    background-color: limegreen;
+    color: white;
+}
+
+.answer-card-text.a2a {
+    background-color: red;
+    color: white;
+}
+
+.question-card-title.cah,
+.answer-card-title.cah {
+    display: none;
+    margin: 0;
+}
+
+.question-card-text.cah,
+.answer-card-text.cah {
+    width: 292px;
+    height: 76px;
+    margin: 2px 4px;
+    font-size: 115%;
+}
+
+.question-card-text.cah p,
+.answer-card-text.cah p {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    margin: 0;
+}
+
+.question-card-text.cah {
+    background-color: black;
+    color: white;
+}
+
+.question-card-back.a2a {
+    background-image: url('images/a2a_green_back_landscape.jpg');
+    background-size: contain;
+}
+
+.question-card-back.cah {
+    background-image: url('images/cah_black_back_landscape.png');
+    background-size: contain;
+}
+
+.answer-card-back.a2a {
+    background-image: url('images/a2a_red_back_landscape.jpg');
+    background-size: contain;
+}
+
+.answer-card-back.cah {
+    background-image: url('images/cah_white_back_landscape.png');
+    background-size: contain;
+}
+
+#board-div {
+    width: 100%;
+    height: 70%;
+    float: right;
+    border: 1px solid darkgreen;
+    background-color: #f0fff0;
+}
+
+.solution {
+    width: 100%;
+
+    .solution-player {
+        width: 100%;
+
+        p {
+            margin: 0 1em;
+        }
+
+        .solution-winner {
+            font-weight: bold;
+            color: red;
+        }
+    }
+
+    .solution-cards {
+        width: 100%;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-justify-content: center;
+        justify-content: center;
+        -webkit-align-items: stretch;
+        align-items: stretch;
+
+        .solution-card {
+            max-width: 300px;
+        }
+    }
+}
+
+#history-div {
+    width: 100%;
+    height: 15%;
+    bottom: 0;
+    float: right;
+    border: 1px solid darkgoldenrod;
+    background-color: palegoldenrod;
+}
+
+#history-scroll {
+    height: 85%;
+    overflow: scroll;
+    text-align: left;
+
+    p {
+        margin: 0 0 0 1em;
+    }
+}
+
+/* Styling for adapting to mobile displays. */
+@media (orientation: portrait) and (max-width: 500px) {
+
+    /* Styling for the Play Game page. */
+    #column-1,
+    #column-2 {
+        width: 100%;
+    }
+
+    .question-card-text,
+    .answer-card.text {
+        min-height: inherit;
+    }
+
+}
+
+/* Styling for adapting to not-as-tall screens and displays. */
+
+/* Max-height: 900 for typical laptop display. */
+@media (max-height: 900px) {
+
+    /* Styling for the Play Game page. */
+    #page-title h2 {
+        padding-top: 0;
+    }
+
+    #player-list-div {
+        height: 15%;
+    }
+
+    #status-div {
+        height: 4%;
+    }
+
+    #board-div {
+        height: 81%;        /* Push History into scroll area to see the whole board. */
+    }
+
+    /* Have to shrink card heights to fit, and shrink widths to allow for scroll bar. */
+    .card {
+        height: 55px;
+        width: 270px;
+    }
+
+    .question-card-title.a2a,
+    .answer-card-title.a2a {
+        width: 263px;
+    }
+
+    .question-card-text.a2a,
+    .answer-card-text.a2a {
+        width: 263px;
+        font-size: 75%;
+        height: 30px;
+    }
+
+    .question-card-text.cah,
+    .answer-card-text.cah {
+        width: 263px;
+        height: 51px;
+        font-size: 80%;
+    }
+
+    .ordinal-div {
+        width: 30px;
+        height: 30px;
+        margin: 0 5px 10px 5px;
+    }
+
+    .ordinal-circle {
+        width: 28px;
+        height: 28px;
+    }
+
+    .ordinal-div p {
+        font-size: 75%;
+        margin: 0;
+        padding: 0.5em 0;
+    }
+
+}
+
+/* Max-height: 675 for iPhone 6. */
+@media (max-height: 675px) {
+    #status-div {
+        height: 8%;     /* Needs two lines to hold status sometimes. */
+    }
+}

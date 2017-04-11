@@ -1,5 +1,5 @@
 <div id="new-game-div">
-    <h2 class="page-title">New Game &mdash; Game ID {{ngc.currentGame.gameId}}</h2>
+    <h2>New Game &mdash; Game ID {{ngc.currentGame.gameId}}</h2>
     <img ng-show="ngc.currentGame.gameTypeApples" src="images/a2a_box.jpg">
     <img ng-show="!ngc.currentGame.gameTypeApples" src="images/cah_box.jpg">
     <hr>
@@ -27,6 +27,6 @@
     <hr>
     <h2>When you have named the game,</h2>
     <h2>and all players have joined:</h2>
-    <button class="launch-game-button" ng-disabled="ngc.gameOver || !ngc.gameName || (ngc.playerList.length < 3)"
+    <button ng-disabled="ngc.gameOver || !ngc.gameName || (ngc.playerList.length < 3)"
             ng-click="ngc.onLaunchButton()">Launch The Game</button>
 </div>

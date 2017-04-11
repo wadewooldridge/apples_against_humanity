@@ -20,8 +20,8 @@ been used throughout the code:
     - host: the player that creates, configures, and launches the game.
 
 ## To Do:
+- Add ability to send messages to another player or all players.
 - Add alert that leaving the Play Game window will exit the game.
-- Make the mobile use a "slide right" to see the player's hand.
+- Make the mobile version use a "slide right" to see the player's hand.
 - Clean up CAH fit of multiple cards in solution on mobile.
 - Check into using a "text fit" library to better fit card text.
-- Create design notes diagram.

@@ -3,13 +3,22 @@
   "version": "1.0.2",
   "description": "Apples-to-Apples and Cards Against Humanity multi-player game",
   "author": "Wade Wooldridge (waderwooldridge@gmail.com)",
+  "license": "Unlicense",
   "private": false,
-  "files": ["app", "bin", "public", "routes", "views", "index.js"],
+  "files": [
+    "app",
+    "bin",
+    "public",
+    "routes",
+    "views",
+    "index.js"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/wadewooldridge/apples_against_humanity"
   },
   "scripts": {
+    "build-css": "node_modules/.bin/node-sass public/style.scss public/style.css",
     "start": "node ./bin/www"
   },
   "dependencies": {
@@ -21,5 +30,8 @@
     "morgan": "~1.7.0",
     "serve-favicon": "~2.3.0",
     "socket.io": "^1.7.2"
+  },
+  "devDependencies": {
+    "node-sass": "^4.5.2"
   }
 }

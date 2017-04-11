@@ -2,589 +2,421 @@
  *  apples_against_humanity - Apples-to-Apples and Cards Against Humanity multi-player game.
  *  Copyright (C) 2017 by Wade Wooldridge
  *
- *  style.css - Client CSS file.
+ *  style.scss - Client SCSS file
+ *  NOTE: DO NOT EDIT THE style.css FILE!
+ *  Edit the style.scss file, then use npm run build-css to compile this into the style.css file.
  */
-
 /* Styling for overall program. */
 * {
-    box-sizing: border-box;
-}
+  box-sizing: border-box; }
 
 body {
-    margin: 0;
-}
+  margin: 0;
+  text-align: center; }
 
 .shaded {
-    opacity: 0.3;
-}
+  opacity: 0.3; }
 
+/* Variables. */
+/* Mix-ins. */
 /* Styling for the Choose Game page. */
 #choose-game-div {
-    max-width: 600px;
-}
-
-#choose-game-div h2 {
+  max-width: 600px; }
+  #choose-game-div h2,
+  #choose-game-div h4 {
     text-align: center;
-    margin: 0.5em 0;
-}
-
-.game-box-div {
-    text-align: center;
+    margin: 0.25em 0; }
+  #choose-game-div .game-box-div {
     display: inline-block;
     width: 40%;
-    margin: 0.5em 4%;
-}
-
-.game-box-div img {
-    width: 100%;
-    height: 100%;
-}
-
-.start-new-game-button {
-    margin: 0.5em auto;
-    font-size: 150%;
-    border: 2px solid black;
-}
-
-.game-box-div button:hover {
-    border: 2px solid limegreen;
-}
-
-#choose-game-div table,
-#choose-game-div th,
-#choose-game-div td {
+    margin: 0.5em 4%; }
+    #choose-game-div .game-box-div img {
+      width: 100%;
+      height: 100%; }
+    #choose-game-div .game-box-div button {
+      margin: 0.5em auto;
+      font-size: 150%;
+      border: 2px solid black; }
+    #choose-game-div .game-box-div button:hover {
+      border: 2px solid limegreen; }
+  #choose-game-div table,
+  #choose-game-div th,
+  #choose-game-div td {
     border: 1px solid black;
-    text-align: center;
-}
-
-#choose-game-div table {
+    text-align: center; }
+  #choose-game-div table {
     width: 80%;
     margin-left: 10%;
-    border-collapse: collapse;
-}
-
-#choose-game-div table img {
+    border-collapse: collapse; }
+  #choose-game-div table img {
     width: 50px;
-    height: 50px;
-}
+    height: 50px; }
 
 /* Styling for the New Game page. */
 #new-game-div {
-    max-width: 600px;
+  max-width: 600px; }
+  #new-game-div h2,
+  #new-game-div h4 {
     text-align: center;
-}
-
-#new-game-div h2 {
-    text-align: center;
-    margin: 0.25em 0;
-}
-
-#new-game-div img {
-    width: 150px;
-}
-
-#new-game-div input {
+    margin: 0.25em 0; }
+  #new-game-div img {
+    width: 150px; }
+  #new-game-div input {
     width: 80%;
+    text-align: center;
     margin-bottom: 1em;
-    text-align: center;
-    font-size: 125%;
-}
-
-#new-game-div table,
-#new-game-div th,
-#new-game-div td {
+    font-size: 125%; }
+  #new-game-div table,
+  #new-game-div th,
+  #new-game-div td {
     border: 1px solid black;
-    text-align: center;
-}
-
-#new-game-div table {
+    text-align: center; }
+  #new-game-div table {
     width: 80%;
     margin-left: 10%;
-    border-collapse: collapse;
-}
-
-#new-game-div table img {
-    height: 1em;
+    border-collapse: collapse; }
+  #new-game-div table img {
     width: auto;
-}
-
-.launch-game-button {
+    height: 1em; }
+  #new-game-div button {
     margin: 0.5em auto;
     font-size: 150%;
-    border: 2px solid black;
-}
-
-.launch-game-button:hover {
-    border: 2px solid limegreen;
-}
+    border: 2px solid black; }
+  #new-game-div button:hover {
+    border: 2px solid limegreen; }
 
 /* Styling for the Join Game page. */
 #join-game-div {
-    max-width: 600px;
+  max-width: 600px; }
+  #join-game-div h2,
+  #join-game-div h4 {
     text-align: center;
-}
-
-#join-game-div h2 {
-    text-align: center;
-    margin: 0.25em 0;
-}
-
-#join-game-div img {
-    width: 150px;
-}
-
-#join-game-div input {
+    margin: 0.25em 0; }
+  #join-game-div img {
+    width: 150px; }
+  #join-game-div input {
     width: 80%;
+    text-align: center;
     margin-bottom: 1em;
-    text-align: center;
-    font-size: 125%;
-}
-
-#join-game-div table,
-#join-game-div th,
-#join-game-div td {
+    font-size: 125%; }
+  #join-game-div table,
+  #join-game-div th,
+  #join-game-div td {
     border: 1px solid black;
-    text-align: center;
-}
-
-#join-game-div table {
+    text-align: center; }
+  #join-game-div table {
     width: 80%;
     margin-left: 10%;
-    border-collapse: collapse;
-}
-
-#join-game-div table img {
-    height: 1em;
+    border-collapse: collapse; }
+  #join-game-div table img {
     width: auto;
-}
+    height: 1em; }
 
 /* Styling for the Play Game page. */
 #play-game-div {
-    max-width: 1200px;
+  max-width: 1200px; }
+  #play-game-div h2,
+  #play-game-div h4 {
     text-align: center;
-}
-
-#play-game-div h2,
-#play-game-div h4 {
-    text-align: center;
-    margin: 0.25em 0;
-}
+    margin: 0.25em 0; }
 
 #page-title {
-    width: 100%;
-    height: 5vh;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-justify-content: center;
-    justify-content: center;
-    -webkit-align-items: stretch;
-    align-items: stretch;
-}
-
-#page-title h2 {
-    padding-top: 1vh;
-}
-
-#page-title img {
+  width: 100%;
+  height: 5vh;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-items: stretch;
+  align-items: stretch; }
+  #page-title h2 {
+    padding-top: 1vh; }
+  #page-title img {
     height: 4vh;
     width: auto;
-    margin: 0.5vh 20px;
-}
+    margin: 0.5vh 20px; }
 
 #column-1 {
-    width: 42%;
-    height: 95vh;
-    float: left;
-}
+  width: 42%;
+  height: 95vh;
+  float: left; }
 
 #hand-div {
-    width: 100%;
-    height: 100%;
-    border: 1px solid blue;
-    background-color: aliceblue;
-    overflow: auto;
-}
-
-#hand-div > div {
-}
-
-.ordinal-div {
+  width: 100%;
+  height: 100%;
+  border: 1px solid blue;
+  background-color: aliceblue;
+  overflow: auto; }
+  #hand-div .ordinal-div {
     display: inline-block;
     vertical-align: bottom;
     position: relative;
     width: 50px;
     height: 50px;
-    margin: 0 5px 20px 5px;
-    text-align: center;
-}
-
-.ordinal-circle {
+    margin: 0 5px 20px 5px; }
+    #hand-div .ordinal-div p {
+      margin: 0;
+      padding: 0.85em 0; }
+  #hand-div .ordinal-circle {
     width: 48px;
     height: 48px;
     border-radius: 100%;
     color: white;
-    background-color: deeppink;
-}
-
-.ordinal-div p {
-    margin: 0;
-    padding: 0.85em 0;
-}
-
-#hand-div .card {
-    display: inline-block;
-}
+    background-color: deeppink; }
+  #hand-div .card {
+    display: inline-block; }
 
 .blurred {
-    opacity: 0.5;
-    filter: blur(1px) grayscale(100%);
-}
+  opacity: 0.5;
+  filter: blur(1px) grayscale(100%); }
 
 #reset-button,
 #play-button {
-    margin: 0.5em 1em;
-}
+  margin: 0.5em 1em; }
 
 #reset-button:enabled {
-    background-color: orange;
-    color: white;
-}
+  background-color: orange;
+  color: white; }
 
 #play-button:enabled {
-    background-color: blue;
-    color: white;
-}
+  background-color: blue;
+  color: white; }
 
 #column-2 {
-    width: 58%;
-    height: 95vh;
-    float: right;
-}
+  width: 58%;
+  height: 95vh;
+  float: right; }
 
 #player-list-div {
-    width: 100%;
-    height: 10%;
-    border: 1px solid darkviolet;
-    background-color: #fff0ff;
-}
+  width: 100%;
+  height: 10%;
+  border: 1px solid darkviolet;
+  background-color: #fff0ff; }
 
 #player-title-div {
-    width: 100%;
-    height: 20%;
-    overflow: hidden;
-}
-
-#player-title-div h4 {
-    margin: 0;
-}
+  width: 100%;
+  height: 20%;
+  overflow: hidden; }
+  #player-title-div h4 {
+    margin: 0; }
 
 #players-div {
+  width: 100%;
+  height: 80%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: center;
+  justify-content: center;
+  -webkit-align-items: stretch;
+  align-items: stretch; }
+  #players-div .player-div {
     width: 100%;
-    height: 80%;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-justify-content: center;
-    justify-content: center;
-    -webkit-align-items: stretch;
-    align-items: stretch;
-}
-
-.player-div {
-    width: 100%;
-    border: 1px solid darkviolet;
-}
-
-.player-div p {
-    margin: 0.25em 0;
-}
+    border: 1px solid darkviolet; }
+    #players-div .player-div p {
+      margin: 0.25em 0; }
 
 .player-judge {
-    font-weight: bold;
-    color: darkred;
-}
+  font-weight: bold;
+  color: darkred; }
 
 #status-div {
-    width: 100%;
-    height: 5%;
-    border: 1px solid purple;
-}
-
-#status-div p {
+  width: 100%;
+  height: 5%;
+  border: 1px solid purple; }
+  #status-div p {
     top: 50%;
     transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
-}
-
-#board-div {
-    text-align: center;
-}
-
-#board-div > p {
-    margin: 0 0 5px 0;
-}
+    -webkit-transform: translateY(-50%); }
 
 #board-div .question-card,
-.board-div .solution-card {
-    margin: auto;
-}
+#board-div .solution-card {
+  margin: auto; }
+
+#board-div > p {
+  margin: 0 0 5px 0; }
 
 .card {
-    width: 300px;
-    height: 80px;
-    margin-bottom: 5px;
-    border: 1px solid black;
-    border-radius: 6px;
-}
+  width: 300px;
+  height: 80px;
+  margin-bottom: 5px;
+  border: 1px solid black;
+  border-radius: 6px; }
 
 .question-card,
 .answer-card {
-    background-color: white;
-}
-
-.question-card-front,
-.answer-card-front {
-
-}
-
-.question-card-front.a2a,
-.answer-card-front.a2a {
-
-}
+  background-color: white; }
 
 .question-card-front.cah {
-    background-color: black;
-}
+  background-color: black; }
 
 .question-card-title.a2a,
 .answer-card-title.a2a {
-    width: 292px;
-    height: 16px;
-    margin: 0 4px 5px 4px;
-    font-size: 115%;
-    font-weight: bolder;
-}
+  width: 292px;
+  height: 16px;
+  margin: 0 4px 5px 4px;
+  font-size: 115%;
+  font-weight: bolder; }
 
 .question-card-text.a2a,
 .answer-card-text.a2a {
-    width: 293px;
-    height: 55px;
-    margin: 2px 3px;
-    border-radius: 4px;
-    font-size: 90%;
-}
+  width: 293px;
+  height: 55px;
+  margin: 2px 3px;
+  border-radius: 4px;
+  font-size: 90%; }
 
 .question-card-text.a2a p,
 .answer-card-text.a2a p {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
-    margin: 0;
-}
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  margin: 0; }
 
 .question-card-text.a2a {
-    background-color: limegreen;
-    color: white;
-}
+  background-color: limegreen;
+  color: white; }
 
 .answer-card-text.a2a {
-    background-color: red;
-    color: white;
-}
+  background-color: red;
+  color: white; }
 
 .question-card-title.cah,
 .answer-card-title.cah {
-    display: none;
-    margin: 0;
-}
+  display: none;
+  margin: 0; }
 
 .question-card-text.cah,
 .answer-card-text.cah {
-    width: 292px;
-    height: 76px;
-    margin: 2px 4px;
-    font-size: 115%;
-}
+  width: 292px;
+  height: 76px;
+  margin: 2px 4px;
+  font-size: 115%; }
 
 .question-card-text.cah p,
 .answer-card-text.cah p {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
-    -webkit-transform: translateY(-50%);
-    margin: 0;
-}
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  margin: 0; }
 
 .question-card-text.cah {
-    background-color: black;
-    color: white;
-}
+  background-color: black;
+  color: white; }
 
 .question-card-back.a2a {
-    background-image: url('images/a2a_green_back_landscape.jpg');
-    background-size: contain;
-}
+  background-image: url("images/a2a_green_back_landscape.jpg");
+  background-size: contain; }
 
 .question-card-back.cah {
-    background-image: url('images/cah_black_back_landscape.png');
-    background-size: contain;
-}
+  background-image: url("images/cah_black_back_landscape.png");
+  background-size: contain; }
 
 .answer-card-back.a2a {
-    background-image: url('images/a2a_red_back_landscape.jpg');
-    background-size: contain;
-}
+  background-image: url("images/a2a_red_back_landscape.jpg");
+  background-size: contain; }
 
 .answer-card-back.cah {
-    background-image: url('images/cah_white_back_landscape.png');
-    background-size: contain;
-}
+  background-image: url("images/cah_white_back_landscape.png");
+  background-size: contain; }
 
 #board-div {
-    width: 100%;
-    height: 70%;
-    float: right;
-    border: 1px solid darkgreen;
-    background-color: #f0fff0;
-}
+  width: 100%;
+  height: 70%;
+  float: right;
+  border: 1px solid darkgreen;
+  background-color: #f0fff0; }
 
 .solution {
-    width: 100%;
-    text-align: center;
-}
-
-.solution-player {
-    width: 100%;
-}
-
-.solution-player p {
-    margin: 0 1em;
-}
-
-.solution-winner {
-    font-weight: bold;
-    color: red;
-}
-
-.solution-cards {
+  width: 100%; }
+  .solution .solution-player {
+    width: 100%; }
+    .solution .solution-player p {
+      margin: 0 1em; }
+    .solution .solution-player .solution-winner {
+      font-weight: bold;
+      color: red; }
+  .solution .solution-cards {
     width: 100%;
     display: -webkit-flex;
     display: flex;
     -webkit-justify-content: center;
     justify-content: center;
     -webkit-align-items: stretch;
-    align-items: stretch;
-}
-
-.solution-card {
-    max-width: 300px;
-}
+    align-items: stretch; }
+    .solution .solution-cards .solution-card {
+      max-width: 300px; }
 
 #history-div {
-    width: 100%;
-    height: 15%;
-    bottom: 0;
-    float: right;
-    border: 1px solid darkgoldenrod;
-    background-color: palegoldenrod;
-}
+  width: 100%;
+  height: 15%;
+  bottom: 0;
+  float: right;
+  border: 1px solid darkgoldenrod;
+  background-color: palegoldenrod; }
 
 #history-scroll {
-    height: 85%;
-    overflow: scroll;
-    text-align: left;
-}
-
-#history-scroll p {
-    margin: 0 0 0 1em;
-}
+  height: 85%;
+  overflow: scroll;
+  text-align: left; }
+  #history-scroll p {
+    margin: 0 0 0 1em; }
 
 /* Styling for adapting to mobile displays. */
 @media (orientation: portrait) and (max-width: 500px) {
-
-    /* Styling for the Play Game page. */
-    #column-1,
-    #column-2 {
-        width: 100%;
-    }
-
-    .question-card-text,
-    .answer-card.text {
-        min-height: inherit;
-    }
-
-}
+  /* Styling for the Play Game page. */
+  #column-1,
+  #column-2 {
+    width: 100%; }
+  .question-card-text,
+  .answer-card.text {
+    min-height: inherit; } }
 
 /* Styling for adapting to not-as-tall screens and displays. */
-
 /* Max-height: 900 for typical laptop display. */
 @media (max-height: 900px) {
-
-    /* Styling for the Play Game page. */
-    #page-title h2 {
-        padding-top: 0;
-    }
-
-    #player-list-div {
-        height: 15%;
-    }
-
-    #status-div {
-        height: 4%;
-    }
-
-    #board-div {
-        height: 81%;        /* Push History into scroll area to see the whole board. */
-    }
-
-    /* Have to shrink card heights to fit, and shrink widths to allow for scroll bar. */
-    .card {
-        height: 55px;
-        width: 270px;
-    }
-
-    .question-card-title.a2a,
-    .answer-card-title.a2a {
-        width: 263px;
-    }
-
-    .question-card-text.a2a,
-    .answer-card-text.a2a {
-        width: 263px;
-        font-size: 75%;
-        height: 30px;
-    }
-
-    .question-card-text.cah,
-    .answer-card-text.cah {
-        width: 263px;
-        height: 51px;
-        font-size: 80%;
-    }
-
-    .ordinal-div {
-        width: 30px;
-        height: 30px;
-        margin: 0 5px 10px 5px;
-    }
-
-    .ordinal-circle {
-        width: 28px;
-        height: 28px;
-    }
-
-    .ordinal-div p {
-        font-size: 75%;
-        margin: 0;
-        padding: 0.5em 0;
-    }
-
-
-}
+  /* Styling for the Play Game page. */
+  #page-title h2 {
+    padding-top: 0; }
+  #player-list-div {
+    height: 15%; }
+  #status-div {
+    height: 4%; }
+  #board-div {
+    height: 81%;
+    /* Push History into scroll area to see the whole board. */ }
+  /* Have to shrink card heights to fit, and shrink widths to allow for scroll bar. */
+  .card {
+    height: 55px;
+    width: 270px; }
+  .question-card-title.a2a,
+  .answer-card-title.a2a {
+    width: 263px; }
+  .question-card-text.a2a,
+  .answer-card-text.a2a {
+    width: 263px;
+    font-size: 75%;
+    height: 30px; }
+  .question-card-text.cah,
+  .answer-card-text.cah {
+    width: 263px;
+    height: 51px;
+    font-size: 80%; }
+  .ordinal-div {
+    width: 30px;
+    height: 30px;
+    margin: 0 5px 10px 5px; }
+  .ordinal-circle {
+    width: 28px;
+    height: 28px; }
+  .ordinal-div p {
+    font-size: 75%;
+    margin: 0;
+    padding: 0.5em 0; } }
 
 /* Max-height: 675 for iPhone 6. */
 @media (max-height: 675px) {
-    #status-div {
-        height: 8%;     /* Needs two lines to hold status sometimes. */
-    }
-}
+  #status-div {
+    height: 8%;
+    /* Needs two lines to hold status sometimes. */ } }
